@@ -1,0 +1,12 @@
+.gradle/
+.kotlin/
+.idea/
+local.properties
+**/build/
+.tools/
+*.iml
+*.jks
+captures/
+protocol-test
+protocol-test.exe
+*.obj
