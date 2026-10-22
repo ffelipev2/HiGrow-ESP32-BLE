@@ -2,11 +2,13 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
-## Tablet y ventanas amplias · versión 1.2.0
+## Tablet y ventanas amplias · versión 1.2.1
 
-El diseño se adapta al espacio de la ventana: navegación lateral desde 600 dp, cuatro tarjetas de Inicio en una fila cuando caben, gráficos en una cuadrícula de 2 × 2 con altura ajustada a la pantalla, detalle y ajustes en dos columnas e historial en tabla cuando hay ancho suficiente. Al estrechar la ventana o aumentar el texto se reducen las columnas para mantener la legibilidad. En teléfonos estrechos se conserva la navegación inferior.
+El diseño se adapta al espacio de la ventana: navegación lateral desde 600 dp, Inicio con controles de conexión a un lado y sensores en una cuadrícula de 2 × 2 que aprovecha la altura, gráficos ajustados a la pantalla, detalle y ajustes en dos columnas e historial en tabla cuando hay ancho suficiente. Al estrechar la ventana o aumentar el texto se reducen las columnas para mantener la legibilidad. En teléfonos estrechos se conserva la navegación inferior.
 
 Estas capturas se obtuvieron ejecutando las **vistas de diseño en una Lenovo TB-J606F**, en horizontal. Llevan la etiqueta **VISTA PREVIA · DATOS DE DISEÑO**: sirven para revisar la distribución con muestras del editor y no representan una nueva sesión BLE real.
+
+<a href="docs/screenshots/tablet-dashboard-landscape.png"><img src="docs/screenshots/tablet-dashboard-landscape.png" alt="Inicio 1.2.1 en tablet horizontal: conexión lateral y cuatro sensores grandes con gráficas, datos de diseño" width="900"></a>
 
 | Gráficos en horizontal | Ajustes en columnas | Historial en tabla |
 | --- | --- | --- |

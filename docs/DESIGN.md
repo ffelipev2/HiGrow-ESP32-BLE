@@ -1,4 +1,4 @@
-# Paneles nativos — HiGrow Monitor 1.2.0
+# Paneles nativos — HiGrow Monitor 1.2.1
 
 La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y reduce las columnas según el ancho disponible y el tamaño de texto.
 
@@ -21,14 +21,14 @@ La adaptación depende de las dimensiones de la **ventana actual**, no de un mod
 
 | Pantalla | Distribución adaptable |
 | --- | --- |
-| Inicio | Una o dos columnas en ventanas pequeñas; cuatro en ventanas amplias cuando cada tarjeta dispone de al menos 240 dp legibles. Se evita una distribución de tres tarjetas más una aislada. |
+| Inicio | Desde 900 dp legibles y 480 dp de alto útil, conexión y controles en un panel lateral desplazable; a su lado, sensores en 2 × 2 con altura calculada a partir de la ventana. Las minigráficas crecen dentro de las tarjetas. En tablet vertical las tarjetas también aumentan de altura; en teléfono conservan la presentación compacta. Con texto grande se apilan los controles y se permite desplazar el contenido. |
 | Gráficos | Dos columnas cuando cada gráfica dispone de al menos 280 dp legibles. La altura del trazado se calcula con la altura útil, reservando espacio para selector, ejes, etiquetas y avisos; en ventanas estrechas sigue siendo compacta. |
 | Detalle | Hasta dos columnas de al menos 300 dp legibles; el sensor elegido sigue primero y las minigráficas aumentan de altura en tablet. |
 | Historial | Tabla con hora y los cuatro sensores desde 720 dp legibles; por debajo se usan una o dos columnas de tarjetas. Mantiene el orden más reciente primero y el desplazamiento vertical. |
 | Ajustes | Conexión y acerca de en una columna, umbrales en otra cuando caben dos bloques de al menos 300 dp legibles. En ventanas estrechas quedan apilados. |
 | Selector BLE | Panel centrado con ancho limitado por Material 3, abierto completamente y con contenido desplazable para poder alcanzar los botones en horizontal. |
 
-Las [capturas de tablet del README](../README.md#tablet-y-ventanas-amplias--versión-120) muestran las vistas de diseño ejecutadas en la Lenovo TB-J606F. Sus muestras siguen separadas de `MainActivity` y se identifican en pantalla.
+Las [capturas de tablet del README](../README.md#tablet-y-ventanas-amplias--versión-121) muestran las vistas de diseño ejecutadas en la Lenovo TB-J606F. Sus muestras siguen separadas de `MainActivity` y se identifican en pantalla. Inicio corresponde a la corrección 1.2.1; los otros paneles mantienen la distribución 1.2.0.
 
 ## Datos y compatibilidad
 
@@ -44,7 +44,7 @@ El historial se conserva en memoria durante la conexión y se vacía al desconec
 
 - Compilar: `gradlew.bat testDebugUnitTest assembleDebug lintDebug`.
 - APK: `app/build/outputs/apk/debug/app-debug.apk`.
-- Versión: 1.2.0, código 3; puede actualizar la instalación debug anterior si conserva la misma firma.
+- Versión: 1.2.1, código 4; puede actualizar la instalación debug anterior si conserva la misma firma.
 - Vistas del editor: abrir `app/src/debug/java/cl/higrow/monitor/ui/DesignPreviews.kt` en Android Studio y elegir Design/Split. Incluye inicio vacío/conectado, gráficos, detalle, ajustes, historial, modo oscuro y fuente grande a 320 dp.
 - El grupo **Tablet** añade vistas horizontales 1333 × 800 dp, verticales 800 × 1333 dp, una ventana de 600 dp y texto a escala 1.5. También hay una vista de teléfono horizontal de 850 × 393 dp.
 

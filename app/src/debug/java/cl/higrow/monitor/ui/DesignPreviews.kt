@@ -82,6 +82,13 @@ private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: Sensor
 @Preview(name = "18 Teléfono horizontal", group = "Accesibilidad", widthDp = 850, heightDp = 393)
 @Composable fun LandscapePhonePreview() { PanelPreview(tab = 1) }
 
+@Preview(name = "19 Tablet · Inicio sin conexión", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletDashboardEmptyPreview() { PanelPreview(connected = false) }
+@Preview(name = "20 Tablet · Inicio vertical", group = "Tablet", widthDp = 800, heightDp = 1333)
+@Composable fun TabletPortraitDashboardPreview() { PanelPreview() }
+@Preview(name = "21 Tablet · Inicio texto grande", group = "Tablet", widthDp = 1333, heightDp = 800, fontScale = 1.5f)
+@Composable fun TabletDashboardLargeFontPreview() { PanelPreview() }
+
 @Preview(name = "09 Selector BLE", group = "Paneles HiGrow", widthDp = 393, heightDp = 600)
 @Composable fun BleSelectorPreview() {
     HiGrowTheme {

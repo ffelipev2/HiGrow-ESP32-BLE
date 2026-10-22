@@ -1,5 +1,14 @@
 # Validación local — 22 de octubre de 2026
 
+## Corrección de Inicio en tablet 1.2.1
+
+La fila única de cuatro tarjetas de 1.2.0 dejaba libre la mitad inferior de Inicio en horizontal. Se reemplazó por controles de conexión laterales y sensores en una cuadrícula 2 × 2 dimensionada con la altura útil de la ventana. Las minigráficas crecen con la tarjeta. En tablet vertical también se aprovecha la altura; en ventanas de teléfono se mantienen las tarjetas compactas.
+
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**, **13 pruebas correctas**, Lint con **0 errores y 10 advertencias**.
+- Versión **1.2.1**, código **4**, instalada por actualización ADB en la Lenovo TB-J606F. Se inspeccionó `MainActivity` sin conexión en horizontal: panel de conexión y los cuatro sensores visibles, sin el hueco inferior anterior.
+- Se ejecutó `DashboardConnectedPreview` en la tablet para revisar las cuatro gráficas y las etiquetas con datos. La [captura de Inicio](screenshots/tablet-dashboard-landscape.png) está marcada como **VISTA PREVIA · DATOS DE DISEÑO** y no demuestra una conexión BLE real.
+- Se inspeccionó Inicio conectado en vertical y en horizontal con fuente al **150 %**. Con texto grande se apilan los controles sobre las tarjetas y el contenido conserva desplazamiento vertical. Al terminar se restauraron escala **1.0** y rotación horizontal bloqueada, y se dejó abierta la app normal 1.2.1, sin muestras de diseño.
+
 ## Adaptación a tablet Android 1.2.0
 
 - `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**; **13 pruebas JUnit correctas**, Lint con **0 errores y 10 advertencias**.

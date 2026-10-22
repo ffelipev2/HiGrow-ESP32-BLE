@@ -7,22 +7,34 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import cl.higrow.monitor.data.*
 
 @Composable
 fun SensorCard(metric: SensorMetric, data: SensorData?, history: List<SensorData>,
-    thresholds: LightThresholds, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Card(onClick, modifier.heightIn(min = 180.dp), shape = RoundedCornerShape(18.dp),
+    thresholds: LightThresholds, onClick: () -> Unit, modifier: Modifier = Modifier,
+    expanded: Boolean = false, minHeight: Dp = 180.dp) {
+    Card(onClick, modifier.heightIn(min = minHeight), shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = metric.tint())) {
-        Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(29.dp))
-            Text(metric.title, style = MaterialTheme.typography.titleSmall)
+        val contentModifier = if (expanded) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
+        Column(contentModifier.padding(if (expanded) 20.dp else 15.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            if (expanded) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(32.dp))
+                    Text(metric.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                }
+            } else {
+                Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(29.dp))
+                Text(metric.title, style = MaterialTheme.typography.titleSmall)
+            }
             AnimatedContent(targetState = metric.display(data), label = "lectura",
                 transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) }) { value ->
-                Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text(value, style = if (expanded) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold)
             }
             when (metric) {
                 SensorMetric.SOIL -> if (data != null) StateBadge(data.soilState.label, soil = data.soilState)
@@ -32,7 +44,15 @@ fun SensorCard(metric: SensorMetric, data: SensorData?, history: List<SensorData
                 else -> Text(if (data == null) "Sin lectura" else if (metric.value(data) == null) "DHT11 sin lectura" else "DHT11",
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (history.mapNotNull(metric::value).isEmpty()) {
+            if (expanded) {
+                Box(Modifier.weight(1f).fillMaxWidth().heightIn(min = 64.dp).padding(top = 12.dp),
+                    contentAlignment = Alignment.Center) {
+                    if (history.none { metric.value(it) != null }) {
+                        Text("Sin datos para graficar", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else SensorSparkline(history, metric, Modifier.fillMaxSize())
+                }
+            } else if (history.mapNotNull(metric::value).isEmpty()) {
                 Text("Sin datos para graficar", style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
             } else {
