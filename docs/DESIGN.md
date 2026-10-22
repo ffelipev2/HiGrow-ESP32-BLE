@@ -2,6 +2,8 @@
 
 La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y usa una sola columna con fuentes grandes o pantallas pequeñas.
 
+Las [capturas del README](../README.md#paneles-de-la-app--versión-110) muestran los seis paneles ejecutándose en un Xiaomi 25069PTEBG con datos reales recibidos del HiGrow por BLE, en modo oscuro. Los PNG originales están en [screenshots](screenshots/).
+
 | Panel | Comportamiento |
 | --- | --- |
 | Inicio | Estado BLE, nombre/dirección del dispositivo, antigüedad/hora de recepción y cuatro tarjetas con minigráficas de datos recibidos |

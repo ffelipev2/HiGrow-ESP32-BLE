@@ -2,6 +2,22 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
+## Paneles de la app · versión 1.1.0
+
+Inicio reúne las cuatro mediciones en tarjetas con minigráficas y estado de conexión. El selector BLE muestra los dispositivos compatibles cercanos; Gráficos permite revisar las últimas 15, 30 o 60 muestras. Al tocar un sensor se abre su detalle con mínima, máxima y promedio. Historial conserva hasta 60 paquetes de la conexión actual y Ajustes permite configurar la reconexión automática y los umbrales de luminosidad. Incluye modo claro/oscuro y adaptación a texto grande.
+
+**Capturas reales de la app 1.1.0 en un Xiaomi 25069PTEBG**, en modo oscuro, conectado a un HiGrow-ESP32 el 22 de octubre de 2026. Las cifras proceden de los sensores por BLE; no son datos de demostración. Pulsa una imagen para verla a tamaño completo.
+
+| Inicio conectado | Dispositivos BLE | Gráficos |
+| --- | --- | --- |
+| <a href="docs/screenshots/dashboard.png"><img src="docs/screenshots/dashboard.png" alt="Inicio con temperatura, humedad ambiental, sustrato y luminosidad reales" width="250"></a> | <a href="docs/screenshots/ble-devices.png"><img src="docs/screenshots/ble-devices.png" alt="Selector BLE detectando HiGrow-ESP32 con su señal RSSI" width="250"></a> | <a href="docs/screenshots/graphs.png"><img src="docs/screenshots/graphs.png" alt="Gráficos de las mediciones recibidas por BLE" width="250"></a> |
+
+| Detalle del sensor | Historial | Ajustes |
+| --- | --- | --- |
+| <a href="docs/screenshots/sensor-detail.png"><img src="docs/screenshots/sensor-detail.png" alt="Detalle del sensor con estadísticas de la conexión actual" width="250"></a> | <a href="docs/screenshots/history.png"><img src="docs/screenshots/history.png" alt="Historial de paquetes con fecha de recepción y valores reales" width="250"></a> | <a href="docs/screenshots/settings.png"><img src="docs/screenshots/settings.png" alt="Ajustes de conexión, reconexión automática y umbrales de luz" width="250"></a> |
+
+Consulta [el diseño y comportamiento de los paneles](docs/DESIGN.md).
+
 ## Puesta en marcha
 
 1. Abre `firmware/HiGrowMonitor/HiGrowMonitor.ino` en Arduino IDE.
@@ -11,7 +27,7 @@ Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Interne
 5. Ejecuta `app` en un **teléfono Android real con BLE**. En **Inicio**, pulsa **Conectar BLE**, concede los permisos, activa Bluetooth y selecciona `HiGrow-ESP32` en el panel **Dispositivos BLE**.
 6. Las mediciones de **Inicio** se actualizan aproximadamente cada 2 segundos. Toca una tarjeta para ver su detalle; abre **Gráficos** o **Historial** desde la barra inferior. En **Ajustes** puedes editar los umbrales de luminosidad y activar/desactivar la reconexión automática. Las preferencias se guardan localmente.
 
-Las descargas de herramientas/dependencias necesitan Internet al preparar la compilación. La aplicación no declara permiso de Internet y el ESP32 no inicia WiFi. No se han añadido datos de demostración.
+Las descargas de herramientas/dependencias necesitan Internet al preparar la compilación. La aplicación no declara permiso de Internet y el ESP32 no inicia WiFi. La app usa únicamente datos recibidos de la placa. Las vistas previas de Android Studio incluyen muestras aisladas del editor y están identificadas como **DATOS DE DISEÑO**.
 
 ## Hardware
 
@@ -66,7 +82,7 @@ Reemplaza COM5 por el puerto correcto. La carga se realiza de forma explícita; 
 - [Pruebas en nRF Connect y lista de comprobación física](docs/TESTING.md)
 - [DHT11: alimentación, biblioteca y prueba sin BLE](docs/DHT_TROUBLESHOOTING.md)
 - [Estado de las compilaciones en este equipo](docs/VALIDATION.md)
-- Pruebas Android: `app/src/test/java/cl/higrow/monitor/data/BlePacketParserTest.kt`.
+- Pruebas Android: `BlePacketParserTest.kt` y `MeasurementStatsTest.kt`, en `app/src/test/java/cl/higrow/monitor/data/`. Última validación: **13 pruebas correctas**, APK compilado y Lint con **0 errores**; detalles y límites en [VALIDATION.md](docs/VALIDATION.md).
 - Prueba nativa del codificador/umbrales firmware: `tests/firmware_protocol_test.cpp`; en un equipo con C++: `g++ -std=c++11 tests/firmware_protocol_test.cpp -o protocol-test` y ejecutar el binario.
 
 En Windows también puede ejecutarse desde **Developer PowerShell for Visual Studio**: `cl /EHsc tests/firmware_protocol_test.cpp /Fe:protocol-test.exe`, seguido de `.\protocol-test.exe`.

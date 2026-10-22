@@ -9,7 +9,7 @@ Se implementaron los paneles de la referencia del usuario: Inicio, selector BLE 
 - Lint: **0 errores, 10 advertencias** de configuración/dependencias existentes.
 - APK comprobado con `aapt`: versión **1.1.0**, código **2**, minSdk **26**, targetSdk **35**, sin permiso Internet.
 - Vistas Compose renderizadas e inspeccionadas en Android Studio; se revisaron tarjetas vacías/conectadas, gráficos, ajustes y variantes de accesibilidad. Las muestras del editor están identificadas como datos de diseño y separadas de `MainActivity`.
-- No había teléfono conectado a ADB durante el rediseño. La revisión en vistas previas no verifica la instalación ni el enlace BLE de esta versión en un teléfono físico.
+- Comprobación física posterior: ADB identificó un **Xiaomi 25069PTEBG** con la app **1.1.0 / código 2** instalada. Se abrió la app, se detectó `HiGrow-ESP32` en el selector y se estableció la conexión BLE. Se observaron temperatura y humedad DHT válidas, ADC de sustrato/luz y paquetes sucesivos separados aproximadamente 2 s en Historial. Se revisaron Inicio, Gráficos, detalle, Historial y Ajustes en modo oscuro. Las [capturas del README](../README.md#paneles-de-la-app--versión-110) proceden de esta ejecución real, sin datos simulados.
 
 Detalles de pantallas y comportamiento: [DESIGN.md](DESIGN.md).
 
@@ -46,6 +46,6 @@ APK debug generado: `app/build/outputs/apk/debug/app-debug.apk` (17 582 661 byte
 
 El firmware se compiló usando una instalación aislada del core y las bibliotecas DHT 1.4.6 / Unified Sensor 1.1.15 en `.tools`, sin reemplazar el core 3.3.2 ya instalado en Arduino IDE. Los binarios de validación están en `.tools/firmware`; esa carpeta contiene herramientas y cachés locales y está ignorada por Git.
 
-## Pendiente en hardware
+## Alcance y comprobaciones pendientes en hardware
 
-No se cargó el firmware en la placa ni se instaló/ejecutó la app en un teléfono. `adb devices` no mostró dispositivos conectados. No se validaron por radio el advertising, alcance, reconexión, CCCD, ritmo efectivo de notificaciones ni comportamiento de permisos/ciclo de vida en versiones físicas de Android. Tampoco se verificaron visualmente las pantallas ejecutándose en un dispositivo ni la calibración/precisión de sensores. Sigue [TESTING.md](TESTING.md) para esas comprobaciones con HiGrow y nRF Connect.
+La primera entrega y la compilación del rediseño se validaron sin teléfono conectado. La comprobación física posterior descrita arriba confirma el descubrimiento, la conexión y la recepción continua de datos en un dispositivo, además de la visualización de los paneles en modo oscuro. No constituye una prueba de alcance, reconexión ante fallos, permisos en todas las versiones Android, ciclo de vida completo ni calibración/precisión de sensores. No se volvió a cargar firmware durante esta comprobación. Sigue [TESTING.md](TESTING.md) para completar esas pruebas con HiGrow y nRF Connect.
