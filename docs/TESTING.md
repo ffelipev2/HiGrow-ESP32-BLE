@@ -2,7 +2,7 @@
 
 ## nRF Connect para Android
 
-1. Carga el firmware y abre monitor serie a 115200. Debe aparecer una línea de ADC/DHT aproximadamente cada 2 s, además del paquete inicial con DHT ERROR (todavía no se ha leído).
+1. Carga el firmware y abre monitor serie a 115200. Debe aparecer una línea de ADC/DHT aproximadamente cada 2 s, además del paquete inicial con DHT ESPERANDO (todavía no se ha leído). Si persiste ERROR, consulta [diagnóstico del DHT11](DHT_TROUBLESHOOTING.md).
 2. Cierra/desconecta HiGrow Monitor para liberar el periférico. Abre **nRF Connect for Mobile**, concede sus permisos y pulsa Scan.
 3. Busca `HiGrow-ESP32`; comprueba el UUID de servicio `7b183224-9168-443e-a927-7aeea07e8101` en el advertising. El nombre puede aparecer al recibir la respuesta al escaneo.
 4. Pulsa Connect. Localiza ese servicio y su característica `7b183224-9168-443e-a927-7aeea07e8102`; confirma propiedades **READ** y **NOTIFY** y descriptor **Client Characteristic Configuration (0x2902)**.

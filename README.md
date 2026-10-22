@@ -21,7 +21,7 @@ Las descargas de herramientas/dependencias necesitan Internet al preparar la com
 | DHT11 integrado | GPIO22 | Temperatura y humedad, cada 2000 ms |
 | LDR externo | GPIO35 | ADC de 12 bits; salida analógica entre GND y 3.3 V |
 
-Mantén GND común con el LDR. Se configura atenuación ADC de 11 dB explícitamente. Las revisiones de HiGrow pueden variar: los pines aquí son exactamente los indicados en el requisito, sin activar pines de alimentación de otras revisiones. No se aplica conversión a lux ni porcentaje de sustrato. El firmware mantiene BLE y lecturas continuas; no implementa deep sleep.
+Mantén GND común con el LDR. Se configura atenuación ADC de 11 dB explícitamente. Para el **HiGrow original** indicado por el usuario, `BoardConfig.h` activa la alimentación de sensores mediante **GPIO16 en LOW**, antes de iniciar el DHT11 del GPIO22. Otras revisiones (por ejemplo, LilyGO T-HiGrow) tienen un pinout diferente. Consulta [diagnóstico del DHT11](docs/DHT_TROUBLESHOOTING.md) antes de cambiar pines. No se aplica conversión a lux ni porcentaje de sustrato. El firmware mantiene BLE y lecturas continuas; no implementa deep sleep.
 
 ## Compilar desde terminal
 
@@ -64,6 +64,7 @@ Reemplaza COM5 por el puerto correcto. La carga se realiza de forma explícita; 
 
 - [Protocolo BLE y vector de prueba](docs/PROTOCOL.md)
 - [Pruebas en nRF Connect y lista de comprobación física](docs/TESTING.md)
+- [DHT11: alimentación, biblioteca y prueba sin BLE](docs/DHT_TROUBLESHOOTING.md)
 - [Estado de las compilaciones en este equipo](docs/VALIDATION.md)
 - Pruebas Android: `app/src/test/java/cl/higrow/monitor/data/BlePacketParserTest.kt`.
 - Prueba nativa del codificador/umbrales firmware: `tests/firmware_protocol_test.cpp`; en un equipo con C++: `g++ -std=c++11 tests/firmware_protocol_test.cpp -o protocol-test` y ejecutar el binario.

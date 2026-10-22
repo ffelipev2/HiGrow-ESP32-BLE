@@ -1,5 +1,15 @@
 # Validación local — 22 de octubre de 2026
 
+## Corrección DHT11 posterior a la primera entrega
+
+Se confirmó que Arduino IDE usaba una biblioteca DHT antigua que imprimía `Read fail`. Se respaldó fuera de `libraries` y se instaló Adafruit DHT 1.4.6. Se añadió alimentación del HiGrow original mediante GPIO16 LOW, configuración de placa en `BoardConfig.h`, comprobación de biblioteca y diagnóstico por serie/modo sin BLE.
+
+La revisión corregida compila con el core **3.3.2 instalado en Arduino IDE** (1 093 483 bytes de flash; 39 504 bytes de RAM) y con el core **3.3.12 fijado por el proyecto** (1 105 319 bytes de flash; 41 452 bytes de RAM). Durante el diagnóstico también se compiló la variante sin BLE y con depuración Adafruit (858 404 bytes de flash; 33 356 bytes de RAM).
+
+Se leyó la salida física anterior a la corrección en COM6: fallos DHT continuos y ADC reales. **Todavía no se ha cargado la corrección ni confirmado una lectura DHT válida.** El cargador no entró automáticamente en modo programación; se está a la espera de la secuencia BOOT/RESET manual. Detalles en [DHT_TROUBLESHOOTING.md](DHT_TROUBLESHOOTING.md).
+
+## Primera entrega
+
 Ejecutada en Windows con JDK JetBrains 21.0.10 y Android SDK Platform 35 / Build Tools 36.0.0.
 
 | Comprobación | Resultado |

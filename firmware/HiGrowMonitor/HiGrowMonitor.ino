@@ -5,16 +5,17 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <DHT.h>
+#ifdef DHT11
+#error "Biblioteca DHT antigua detectada. Usa DHT sensor library by Adafruit 1.4.6; consulta docs/DHT_TROUBLESHOOTING.md."
+#endif
 #include <atomic>
 #include <math.h>
 #include "SensorProtocol.h"
+#include "BoardConfig.h"
 
-constexpr uint8_t DHT_PIN = 22;
-constexpr uint8_t SOIL_PIN = 32;
-constexpr uint8_t LIGHT_PIN = 35;
 constexpr uint32_t SAMPLE_INTERVAL_MS = 2000;
 constexpr uint32_t FILTER_INTERVAL_MS = 100;
-DHT dht(DHT_PIN, DHT11);
+DHT dht(board::DHT_PIN, DHT11);
 BLECharacteristic* measurement = nullptr;
 BLE2902* cccd = nullptr;
 std::atomic<bool> connected{false};
@@ -24,6 +25,7 @@ uint32_t lastSample = 0;
 uint32_t lastFilter = 0;
 bool advertisingPending = false;
 uint32_t advertisingRequestedAt = 0;
+uint32_t consecutiveDhtErrors = 0;
 
 class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer*) override { connected.store(true); }
@@ -34,6 +36,7 @@ class ServerCallbacks : public BLEServerCallbacks {
 };
 
 void publish(bool readDht) {
+  const int idleLevel = digitalRead(board::DHT_PIN);
   const float temperature = readDht ? dht.readTemperature() : NAN;
   const float humidity = readDht ? dht.readHumidity() : NAN;
   const bool valid = isfinite(temperature) && isfinite(humidity) &&
@@ -46,21 +49,42 @@ void publish(bool readDht) {
   higrow::encode(packet, valid ? static_cast<int16_t>(lroundf(temperature * 10)) : 0,
       valid ? static_cast<uint16_t>(lroundf(humidity * 10)) : 0,
       soilAdc, static_cast<uint16_t>(luzRaw), valid);
-  measurement->setValue(packet, sizeof(packet));
-  if (connected.load() && cccd->getNotifications()) measurement->notify();
+  if (measurement != nullptr) {
+    measurement->setValue(packet, sizeof(packet));
+    if (connected.load() && cccd->getNotifications()) measurement->notify();
+  }
+  const char* dhtStatus = !readDht ? "ESPERANDO" : (valid ? "OK" : "ERROR");
   Serial.printf("Sustrato=%u estado=%u luzRaw=%d luz=%d DHT=%s\n",
-      soilAdc, packet[9], luzRaw, luz, valid ? "OK" : "ERROR");
+      soilAdc, packet[9], luzRaw, luz, dhtStatus);
+  if (readDht) {
+    consecutiveDhtErrors = valid ? 0 : consecutiveDhtErrors + 1;
+    Serial.printf("DHT11 GPIO%u: T=%.1f C HR=%.1f %% reposo=%s fallosConsecutivos=%lu\n",
+        board::DHT_PIN, temperature, humidity, idleLevel == HIGH ? "HIGH" : "LOW",
+        static_cast<unsigned long>(consecutiveDhtErrors));
+    if (!valid && consecutiveDhtErrors == 3) {
+      Serial.println("DHT: revisa alimentacion/pin/modelo. Prueba HIGROW_DIAGNOSTIC_ONLY=1 en BoardConfig.h.");
+    }
+  }
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(SOIL_PIN, INPUT);
-  pinMode(LIGHT_PIN, INPUT);
+  board::enableSensorPower();
+  Serial.printf("HiGrow original: DHT11 GPIO%u, alimentacion GPIO%d=%s, modo=%s\n",
+      board::DHT_PIN, board::SENSOR_POWER_PIN, board::SENSOR_POWER_ON == LOW ? "LOW" : "HIGH",
+      board::DIAGNOSTIC_ONLY ? "DIAGNOSTICO SIN BLE" : "BLE");
+  pinMode(board::SOIL_PIN, INPUT);
+  pinMode(board::LIGHT_PIN, INPUT);
   analogReadResolution(12);
-  analogSetPinAttenuation(SOIL_PIN, ADC_11db);
-  analogSetPinAttenuation(LIGHT_PIN, ADC_11db);
+  analogSetPinAttenuation(board::SOIL_PIN, ADC_11db);
+  analogSetPinAttenuation(board::LIGHT_PIN, ADC_11db);
   asoilmoist = analogRead(32);  // Primera lectura real, sin partir de cero.
-  dht.begin();
+  dht.begin(board::DHT_PULL_TIME_US);
+  if (board::DIAGNOSTIC_ONLY) {
+    // Primer intento tras 2 s de alimentación, programado con millis().
+    lastSample = lastFilter = millis();
+    return;
+  }
   BLEDevice::init(higrow::DEVICE_NAME);
   BLEServer* server = BLEDevice::createServer();
   server->setCallbacks(new ServerCallbacks());
