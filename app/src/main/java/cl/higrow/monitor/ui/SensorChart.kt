@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import cl.higrow.monitor.data.SensorData
 import kotlin.math.max
 
@@ -81,7 +82,7 @@ fun SensorSparkline(history: List<SensorData>, metric: SensorMetric, modifier: M
 
 @Composable
 fun SensorChart(metric: SensorMetric, history: List<SensorData>, modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}) {
+    plotHeight: Dp = 72.dp, onClick: () -> Unit = {}) {
     val values = history.mapNotNull(metric::value)
     val limits = bounds(history, metric, fixed = true)
     val color = metric.ink()
@@ -97,12 +98,12 @@ fun SensorChart(metric: SensorMetric, history: List<SensorData>, modifier: Modif
                     style = MaterialTheme.typography.titleSmall)
             }
             if (values.isEmpty()) {
-                Box(Modifier.fillMaxWidth().height(80.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxWidth().height(plotHeight + 8.dp), contentAlignment = Alignment.Center) {
                     Text("Esperando mediciones", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
-                Row(Modifier.height(72.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.height(plotHeight), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Column(Modifier.width(36.dp).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
                         listOf(limits.high, (limits.high + limits.low) / 2f, limits.low).forEach {
                             Text(if (metric.unit == "ADC") it.toInt().toString() else metric.format(it),

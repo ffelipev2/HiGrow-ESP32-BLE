@@ -1,5 +1,16 @@
 # Validación local — 22 de octubre de 2026
 
+## Adaptación a tablet Android 1.2.0
+
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**; **13 pruebas JUnit correctas**, Lint con **0 errores y 10 advertencias**.
+- Versión **1.2.0**, código **3**, instalada mediante actualización ADB en una **Lenovo TB-J606F**, pantalla física 1200 × 2000 px, densidad 240 dpi. Se abrió `MainActivity` y se comprobó Inicio sin conexión y el selector BLE en horizontal.
+- Se revisaron las pantallas con contenido ejecutando las composiciones de `DesignPreviews.kt` mediante `androidx.compose.ui.tooling.PreviewActivity`, incluida únicamente en debug. Estas pantallas muestran **VISTA PREVIA · DATOS DE DISEÑO**. Las capturas de tablet del README proceden de esta comprobación y no se presentan como mediciones de sensores.
+- Inspección visual en horizontal: Inicio usa cuatro tarjetas, Gráficos muestra los cuatro trazados grandes y sus ejes en dos filas, detalle muestra los cuatro sensores en dos columnas, Historial pasa a tabla y Ajustes distribuye conexión/umbrales en columnas.
+- En vertical se comprobó la cuadrícula de Gráficos; el selector 15/30/60 permanece accesible. El diseño responde al ancho y a la escala de fuente, con desplazamiento vertical para el contenido que no cabe.
+- Se inspeccionó Gráficos con fuente al **150 %** y se comprobó la distribución compacta equivalente a **393 dp** cambiando temporalmente la densidad a 488 dpi: barra inferior, Inicio con dos tarjetas por fila y Gráficos en una columna. Esto verifica una ventana de tamaño teléfono en la tablet; no es una segunda prueba en un teléfono físico.
+- Al terminar se restauraron densidad física **240 dpi**, escala de fuente **1.0** y rotación bloqueada horizontal (**1**), como estaban inicialmente. Se cerró la actividad de vista previa y se dejó abierta la app normal **1.2.0**.
+- No se cambió firmware ni protocolo BLE. No se detectó HiGrow durante el escaneo de esta tablet; esta revisión no valida de nuevo el enlace físico ni la reconexión.
+
 ## Rediseño Android 1.1.0
 
 Se implementaron los paneles de la referencia del usuario: Inicio, selector BLE inferior, Gráficos, detalle de sensores, Historial y Ajustes. También se añadió una preferencia funcional de reconexión automática y estadísticas que omiten lecturas DHT inválidas. No se cambió el firmware, el protocolo ni los umbrales durante este rediseño.

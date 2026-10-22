@@ -63,6 +63,25 @@ private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: Sensor
 @Preview(name = "08 Texto grande", group = "Accesibilidad", widthDp = 320, heightDp = 720, fontScale = 1.5f)
 @Composable fun LargeFontPreview() { PanelPreview() }
 
+@Preview(name = "10 Tablet · Inicio horizontal", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletDashboardPreview() { PanelPreview() }
+@Preview(name = "11 Tablet · Gráficos horizontal", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletGraphsPreview() { PanelPreview(tab = 1) }
+@Preview(name = "12 Tablet · Gráficos vertical", group = "Tablet", widthDp = 800, heightDp = 1333)
+@Composable fun TabletPortraitGraphsPreview() { PanelPreview(tab = 1) }
+@Preview(name = "13 Tablet · Detalle", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletDetailPreview() { PanelPreview(detail = SensorMetric.TEMPERATURE) }
+@Preview(name = "14 Tablet · Historial", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletHistoryPreview() { PanelPreview(tab = 2) }
+@Preview(name = "15 Tablet · Ajustes", group = "Tablet", widthDp = 1333, heightDp = 800)
+@Composable fun TabletSettingsPreview() { PanelPreview(tab = 3) }
+@Preview(name = "16 Ventana estrecha · Gráficos", group = "Tablet", widthDp = 600, heightDp = 800)
+@Composable fun SplitWindowGraphsPreview() { PanelPreview(tab = 1) }
+@Preview(name = "17 Tablet · Texto grande", group = "Tablet", widthDp = 960, heightDp = 600, fontScale = 1.5f)
+@Composable fun TabletLargeFontPreview() { PanelPreview(tab = 1) }
+@Preview(name = "18 Teléfono horizontal", group = "Accesibilidad", widthDp = 850, heightDp = 393)
+@Composable fun LandscapePhonePreview() { PanelPreview(tab = 1) }
+
 @Preview(name = "09 Selector BLE", group = "Paneles HiGrow", widthDp = 393, heightDp = 600)
 @Composable fun BleSelectorPreview() {
     HiGrowTheme {

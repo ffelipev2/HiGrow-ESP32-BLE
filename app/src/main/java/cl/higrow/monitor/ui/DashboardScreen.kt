@@ -29,7 +29,7 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
             { modifier -> SensorCard(metric, data, state.readings.history, state.lightThresholds,
                 { onSensor(metric) }, modifier) }
         }
-        ResponsiveRows(cards)
+        ResponsiveRows(cards, minCellWidth = 240, maxColumns = 4, compactPairs = true)
         OutlinedCard(onConnection, shape = RoundedCornerShape(17.dp),
             colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)) {
             Row(Modifier.fillMaxWidth().padding(13.dp), verticalAlignment = Alignment.CenterVertically,
@@ -108,20 +108,5 @@ private fun ConnectionPanel(state: MonitorUiState, onConnection: () -> Unit) {
     Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(13.dp)) {
         Text(message, Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onErrorContainer)
-    }
-}
-
-@Composable
-fun ResponsiveRows(items: List<@Composable (Modifier) -> Unit>, minPairWidth: Int = 320) {
-    val fontScale = LocalDensity.current.fontScale
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val columns = if (maxWidth >= minPairWidth.dp && fontScale <= 1.35f) 2 else 1
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items.chunked(columns).forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    row.forEach { content -> content(Modifier.weight(1f)) }
-                }
-            }
-        }
     }
 }

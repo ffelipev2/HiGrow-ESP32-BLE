@@ -1,6 +1,6 @@
-# Paneles nativos — HiGrow Monitor 1.1.0
+# Paneles nativos — HiGrow Monitor 1.2.0
 
-La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y usa una sola columna con fuentes grandes o pantallas pequeñas.
+La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y reduce las columnas según el ancho disponible y el tamaño de texto.
 
 Las [capturas del README](../README.md#paneles-de-la-app--versión-110) muestran los seis paneles ejecutándose en un Xiaomi 25069PTEBG con datos reales recibidos del HiGrow por BLE, en modo oscuro. Los PNG originales están en [screenshots](screenshots/).
 
@@ -12,6 +12,23 @@ Las [capturas del README](../README.md#paneles-de-la-app--versión-110) muestran
 | Detalle del sensor | Acceso tocando tarjetas/gráficas; sensor elegido primero, mínima/máxima/promedio de lecturas válidas y escala de sustrato con indicador ADC |
 | Historial | Hasta 60 paquetes de la conexión actual, ordenados del más reciente al más antiguo |
 | Ajustes | Conexión, interruptor real de reconexión automática, edición validada de umbrales de luz y versión de la aplicación |
+
+## Tablet y ventanas redimensionables (1.2.0)
+
+La adaptación depende de las dimensiones de la **ventana actual**, no de un modelo de dispositivo ni de bloquear la orientación. Se elimina el límite central de 1000 dp. Desde 600 dp de ancho, la navegación pasa a una barra lateral desplazable y el contenido usa el resto del ancho con márgenes de 24 dp; en ventanas menores se mantiene la barra inferior y el margen de 14 dp.
+
+`AdaptiveLayout.kt` distribuye las filas según el ancho útil y la escala de fuente. Las tarjetas de una fila tienen la misma altura, se reduce el número de columnas con texto grande y se conserva el orden de lectura de izquierda a derecha y de arriba abajo.
+
+| Pantalla | Distribución adaptable |
+| --- | --- |
+| Inicio | Una o dos columnas en ventanas pequeñas; cuatro en ventanas amplias cuando cada tarjeta dispone de al menos 240 dp legibles. Se evita una distribución de tres tarjetas más una aislada. |
+| Gráficos | Dos columnas cuando cada gráfica dispone de al menos 280 dp legibles. La altura del trazado se calcula con la altura útil, reservando espacio para selector, ejes, etiquetas y avisos; en ventanas estrechas sigue siendo compacta. |
+| Detalle | Hasta dos columnas de al menos 300 dp legibles; el sensor elegido sigue primero y las minigráficas aumentan de altura en tablet. |
+| Historial | Tabla con hora y los cuatro sensores desde 720 dp legibles; por debajo se usan una o dos columnas de tarjetas. Mantiene el orden más reciente primero y el desplazamiento vertical. |
+| Ajustes | Conexión y acerca de en una columna, umbrales en otra cuando caben dos bloques de al menos 300 dp legibles. En ventanas estrechas quedan apilados. |
+| Selector BLE | Panel centrado con ancho limitado por Material 3, abierto completamente y con contenido desplazable para poder alcanzar los botones en horizontal. |
+
+Las [capturas de tablet del README](../README.md#tablet-y-ventanas-amplias--versión-120) muestran las vistas de diseño ejecutadas en la Lenovo TB-J606F. Sus muestras siguen separadas de `MainActivity` y se identifican en pantalla.
 
 ## Datos y compatibilidad
 
@@ -27,7 +44,8 @@ El historial se conserva en memoria durante la conexión y se vacía al desconec
 
 - Compilar: `gradlew.bat testDebugUnitTest assembleDebug lintDebug`.
 - APK: `app/build/outputs/apk/debug/app-debug.apk`.
-- Versión: 1.1.0, código 2; puede actualizar la instalación debug anterior si conserva la misma firma.
+- Versión: 1.2.0, código 3; puede actualizar la instalación debug anterior si conserva la misma firma.
 - Vistas del editor: abrir `app/src/debug/java/cl/higrow/monitor/ui/DesignPreviews.kt` en Android Studio y elegir Design/Split. Incluye inicio vacío/conectado, gráficos, detalle, ajustes, historial, modo oscuro y fuente grande a 320 dp.
+- El grupo **Tablet** añade vistas horizontales 1333 × 800 dp, verticales 800 × 1333 dp, una ventana de 600 dp y texto a escala 1.5. También hay una vista de teléfono horizontal de 850 × 393 dp.
 
 Las vistas previas contienen muestras exclusivas del editor y muestran la etiqueta **VISTA PREVIA · DATOS DE DISEÑO**. `MainActivity` no accede a esos datos. Las vistas previas no sustituyen la prueba de permisos y radio BLE en un teléfono real.

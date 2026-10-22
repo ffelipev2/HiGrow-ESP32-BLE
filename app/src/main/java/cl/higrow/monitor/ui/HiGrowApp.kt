@@ -43,55 +43,82 @@ fun HiGrowApp(state: MonitorUiState, onScan: () -> Unit, onStopScan: () -> Unit,
     BackHandler(enabled = detail != null || selected != 0) {
         if (detail != null) detail = null else selected = 0
     }
-    Scaffold(containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(title = { Text(if (detail != null) "Detalle del sensor" else if (selected == 0) "HiGrow Monitor" else tabs[selected],
-                maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    if (detail != null || selected != 0) IconButton(onClick = { detail = null; selected = 0 }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver al inicio")
-                    } else Box(Modifier.padding(start = 16.dp, end = 9.dp)) { LeafMark(35) }
-                },
-                actions = {
-                    if (selected != 3) IconButton(onClick = { detail = null; selected = 3 }) {
-                        Icon(Icons.Outlined.Settings, "Abrir ajustes")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = ForestGreen,
-                    titleContentColor = Color.White, navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
-        },
-        bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
-                tabs.forEachIndexed { index, title ->
-                    NavigationBarItem(selected = selected == index, onClick = { detail = null; selected = index },
-                        icon = { Icon(icons[index], null, Modifier.size(24.dp)) },
-                        label = { Text(title, style = MaterialTheme.typography.labelSmall) },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface))
-                }
-            }
-        }) { padding ->
-        Surface(Modifier.fillMaxSize().padding(padding), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            color = MaterialTheme.colorScheme.surface) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                key(selected, detail) {
-                    Column(Modifier.widthIn(max = 1000.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(14.dp)) {
-                        when {
-                            detailMetric != null -> SensorDetailScreen(state, detailMetric)
-                            selected == 0 -> DashboardScreen(state, openConnection, { detail = it.ordinal }, onDisconnect)
-                            selected == 1 -> GraphsScreen(state, { detail = it.ordinal })
-                            selected == 2 -> HistoryScreen(state)
-                            else -> SettingsScreen(state, openConnection, onDisconnect, onAutoReconnect, { editThresholds = true })
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val useRail = maxWidth >= 600.dp
+        Scaffold(containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                TopAppBar(title = { Text(if (detail != null) "Detalle del sensor" else if (selected == 0) "HiGrow Monitor" else tabs[selected],
+                    maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    navigationIcon = {
+                        if (detail != null || selected != 0) IconButton(onClick = { detail = null; selected = 0 }) {
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver al inicio")
+                        } else Box(Modifier.padding(start = 16.dp, end = 9.dp)) { LeafMark(35) }
+                    },
+                    actions = {
+                        if (selected != 3) IconButton(onClick = { detail = null; selected = 3 }) {
+                            Icon(Icons.Outlined.Settings, "Abrir ajustes")
                         }
-                        Spacer(Modifier.height(12.dp))
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = ForestGreen,
+                        titleContentColor = Color.White, navigationIconContentColor = Color.White, actionIconContentColor = Color.White))
+            },
+            bottomBar = {
+                if (!useRail) {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
+                        tabs.forEachIndexed { index, title ->
+                            NavigationBarItem(selected = selected == index, onClick = { detail = null; selected = index },
+                                icon = { Icon(icons[index], null, Modifier.size(24.dp)) },
+                                label = { Text(title, style = MaterialTheme.typography.labelSmall) },
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    selectedTextColor = MaterialTheme.colorScheme.onSurface))
+                        }
                     }
                 }
-            }
+            }) { padding ->
+                Row(Modifier.fillMaxSize().padding(padding)) {
+                    if (useRail) {
+                        NavigationRail(Modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
+                            containerColor = MaterialTheme.colorScheme.surface) {
+                            tabs.forEachIndexed { index, title ->
+                                NavigationRailItem(selected = selected == index, onClick = { detail = null; selected = index },
+                                    icon = { Icon(icons[index], null) },
+                                    label = { Text(title, style = MaterialTheme.typography.labelSmall) },
+                                    colors = NavigationRailItemDefaults.colors(
+                                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        selectedTextColor = MaterialTheme.colorScheme.onSurface),
+                                    modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                        }
+                    }
+                    Surface(Modifier.weight(1f).fillMaxHeight(), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                        color = MaterialTheme.colorScheme.surface) {
+                        BoxWithConstraints(Modifier.fillMaxSize()
+                            .padding(horizontal = if (useRail) 24.dp else 14.dp, vertical = 14.dp)) {
+                            CompositionLocalProvider(LocalScreenViewport provides ScreenViewport(maxWidth, maxHeight)) {
+                                key(selected, detail) {
+                                    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+                                        when {
+                                            detailMetric != null -> SensorDetailScreen(state, detailMetric)
+                                            selected == 0 -> DashboardScreen(state, openConnection, { detail = it.ordinal }, onDisconnect)
+                                            selected == 1 -> GraphsScreen(state, { detail = it.ordinal })
+                                            selected == 2 -> HistoryScreen(state)
+                                            else -> SettingsScreen(state, openConnection, onDisconnect,
+                                                onAutoReconnect, { editThresholds = true })
+                                        }
+                                        Spacer(Modifier.height(12.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
         }
     }
     if (bleSheet) {
         ModalBottomSheet(onDismissRequest = { bleSheet = false; onStopScan() },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             containerColor = MaterialTheme.colorScheme.surface) {
             ScanScreen(state, onScan, onStopScan,
                 onConnect = { address -> onConnect(address); bleSheet = false },

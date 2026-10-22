@@ -2,6 +2,18 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
+## Tablet y ventanas amplias · versión 1.2.0
+
+El diseño se adapta al espacio de la ventana: navegación lateral desde 600 dp, cuatro tarjetas de Inicio en una fila cuando caben, gráficos en una cuadrícula de 2 × 2 con altura ajustada a la pantalla, detalle y ajustes en dos columnas e historial en tabla cuando hay ancho suficiente. Al estrechar la ventana o aumentar el texto se reducen las columnas para mantener la legibilidad. En teléfonos estrechos se conserva la navegación inferior.
+
+Estas capturas se obtuvieron ejecutando las **vistas de diseño en una Lenovo TB-J606F**, en horizontal. Llevan la etiqueta **VISTA PREVIA · DATOS DE DISEÑO**: sirven para revisar la distribución con muestras del editor y no representan una nueva sesión BLE real.
+
+| Gráficos en horizontal | Ajustes en columnas | Historial en tabla |
+| --- | --- | --- |
+| <a href="docs/screenshots/tablet-graphs-landscape.png"><img src="docs/screenshots/tablet-graphs-landscape.png" alt="Cuatro gráficos grandes y navegación lateral en tablet horizontal, con datos de diseño" width="300"></a> | <a href="docs/screenshots/tablet-settings-landscape.png"><img src="docs/screenshots/tablet-settings-landscape.png" alt="Conexión y umbrales en dos columnas en tablet, vista de diseño" width="300"></a> | <a href="docs/screenshots/tablet-history-landscape.png"><img src="docs/screenshots/tablet-history-landscape.png" alt="Historial en tabla con cinco columnas en tablet, con datos de diseño" width="300"></a> |
+
+También se puede consultar la [captura de Gráficos en vertical](docs/screenshots/tablet-graphs-portrait.png) y los [criterios de adaptación](docs/DESIGN.md#tablet-y-ventanas-redimensionables-120).
+
 ## Paneles de la app · versión 1.1.0
 
 Inicio reúne las cuatro mediciones en tarjetas con minigráficas y estado de conexión. El selector BLE muestra los dispositivos compatibles cercanos; Gráficos permite revisar las últimas 15, 30 o 60 muestras. Al tocar un sensor se abre su detalle con mínima, máxima y promedio. Historial conserva hasta 60 paquetes de la conexión actual y Ajustes permite configurar la reconexión automática y los umbrales de luminosidad. Incluye modo claro/oscuro y adaptación a texto grande.

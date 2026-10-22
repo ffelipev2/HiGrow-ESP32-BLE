@@ -21,43 +21,51 @@ fun SensorDetailScreen(state: MonitorUiState, selected: SensorMetric) {
     val metrics = listOf(selected) + SensorMetric.entries.filterNot { it == selected }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (state.stale) Notice("Estas mediciones están desactualizadas.")
-        metrics.forEach { metric ->
-            val data = state.readings.latest
-            val history = state.readings.history
-            val stats = MeasurementStats.from(history.map(metric::value))
-            OutlinedCard(shape = RoundedCornerShape(18.dp)) {
-                Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Surface(color = metric.tint(), shape = RoundedCornerShape(12.dp)) {
-                            Icon(metric.icon, null, Modifier.padding(9.dp).size(28.dp), tint = metric.ink())
-                        }
-                        Column(Modifier.weight(1f)) {
-                            Text(metric.title, style = MaterialTheme.typography.titleSmall)
-                            Text(metric.display(data), style = MaterialTheme.typography.headlineMedium)
-                        }
-                        if (metric == SensorMetric.SOIL && data != null) StateBadge(data.soilState.label, data.soilState)
+        val panels: List<@Composable (Modifier) -> Unit> = metrics.map { metric ->
+            { modifier -> SensorDetailPanel(state, metric, modifier) }
+        }
+        ResponsiveRows(panels, minCellWidth = 300)
+    }
+}
+
+@Composable
+private fun SensorDetailPanel(state: MonitorUiState, metric: SensorMetric, modifier: Modifier) {
+    val data = state.readings.latest
+    val history = state.readings.history
+    val stats = MeasurementStats.from(history.map(metric::value))
+    OutlinedCard(modifier = modifier, shape = RoundedCornerShape(18.dp)) {
+        Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(color = metric.tint(), shape = RoundedCornerShape(12.dp)) {
+                    Icon(metric.icon, null, Modifier.padding(9.dp).size(28.dp), tint = metric.ink())
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(metric.title, style = MaterialTheme.typography.titleSmall)
+                    Text(metric.display(data), style = MaterialTheme.typography.headlineMedium)
+                }
+                if (metric == SensorMetric.SOIL && data != null) StateBadge(data.soilState.label, data.soilState)
+            }
+            if (history.mapNotNull(metric::value).isNotEmpty()) {
+                SensorSparkline(history, metric, Modifier.fillMaxWidth()
+                    .height(if (LocalScreenViewport.current.width >= 600.dp) 96.dp else 48.dp), dots = true)
+            } else Text("Esperando mediciones válidas", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (metric == SensorMetric.SOIL) SoilScale(data?.soilAdc)
+            if (metric == SensorMetric.LIGHT && data != null) StateBadge(lightState(data.lightAdc, state.lightThresholds).label)
+            Row(Modifier.fillMaxWidth()) {
+                listOf("Mínima" to stats?.minimum, "Máxima" to stats?.maximum, "Promedio" to stats?.average).forEach { (label, value) ->
+                    Column(Modifier.weight(1f).padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(metric.format(value) + " " + metric.unit, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     }
-                    if (history.mapNotNull(metric::value).isNotEmpty()) {
-                        SensorSparkline(history, metric, Modifier.fillMaxWidth().height(48.dp), dots = true)
-                    } else Text("Esperando mediciones válidas", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (metric == SensorMetric.SOIL) SoilScale(data?.soilAdc)
-                    if (metric == SensorMetric.LIGHT && data != null) StateBadge(lightState(data.lightAdc, state.lightThresholds).label)
-                    Row(Modifier.fillMaxWidth()) {
-                        listOf("Mínima" to stats?.minimum, "Máxima" to stats?.maximum, "Promedio" to stats?.average).forEach { (label, value) ->
-                            Column(Modifier.weight(1f).padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(metric.format(value) + " " + metric.unit, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
-                    }
-                    Text("${stats?.count ?: 0} lecturas válidas en esta conexión", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+            Text("${stats?.count ?: 0} lecturas válidas en esta conexión", style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
+
 @Composable private fun SoilScale(adc: Int?) {
     val marker = MaterialTheme.colorScheme.onSurface
     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
