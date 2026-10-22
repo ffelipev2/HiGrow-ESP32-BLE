@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
@@ -18,7 +19,7 @@ class MainActivity : ComponentActivity() {
     private val model: SensorViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
         setContent {
             HiGrowTheme {
                 val state by model.uiState.collectAsStateWithLifecycle()
@@ -45,7 +46,8 @@ class MainActivity : ComponentActivity() {
                     onStopScan = model::stopScan,
                     onConnect = model::connect,
                     onDisconnect = model::disconnect,
-                    onThresholds = model::saveThresholds)
+                    onThresholds = model::saveThresholds,
+                    onAutoReconnect = model::setAutoReconnect)
             }
         }
     }

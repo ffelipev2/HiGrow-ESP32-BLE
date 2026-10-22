@@ -7,9 +7,21 @@
 3. Busca `HiGrow-ESP32`; comprueba el UUID de servicio `7b183224-9168-443e-a927-7aeea07e8101` en el advertising. El nombre puede aparecer al recibir la respuesta al escaneo.
 4. Pulsa Connect. Localiza ese servicio y su característica `7b183224-9168-443e-a927-7aeea07e8102`; confirma propiedades **READ** y **NOTIFY** y descriptor **Client Characteristic Configuration (0x2902)**.
 5. Pulsa READ. En la vista hexadecimal deben aparecer exactamente **12 bytes**, comenzando con `01`. Decodifica con [PROTOCOL.md](PROTOCOL.md). El vector de ejemplo del documento es una prueba fija; los bytes de la placa dependerán de sus sensores reales.
+
 6. Habilita las notificaciones con el botón de suscripción. El log debe mostrar escritura CCCD **01 00** y eventos de 12 bytes cada ~2 s. No hace falta cambiar el MTU.
 7. Cubre/ilumina el LDR y comprueba que el ADC cambia; en el módulo indicado, valores menores corresponden a mayor luz. Prueba los umbrales contra la señal real antes de ajustarlos.
 8. Desconecta. Vuelve a Scan y conecta de nuevo sin reiniciar la placa. Debe reaparecer y continuar entregando mediciones. Después desconecta nRF Connect para probar la app.
+
+## Paneles Android 1.1.0
+
+1. En **Inicio**, pulsa **Conectar BLE**: debe abrir el panel inferior de dispositivos, resolver permisos y permitir seleccionar el HiGrow real. La señal de búsqueda debe mostrar el RSSI real del resultado.
+2. Tras conectar, comprueba nombre/dirección, hora/antigüedad y las cuatro tarjetas. Desconectado: valores `—` y minigráficas vacías.
+3. Toca una tarjeta para abrir su detalle. Verifica mínima/máxima/promedio contra el historial de la conexión; los errores DHT se omiten de las estadísticas.
+4. En **Gráficos**, alterna 15/30/60 y comprueba que se muestran como máximo esas muestras. Los ejes de ADC deben ser 0–4095.
+5. En **Historial**, verifica el orden del más reciente al más antiguo. Al desconectar debe vaciarse.
+6. En **Ajustes**, cambia y guarda los umbrales; comprueba que la clasificación de luminosidad cambia y las lecturas ADC permanecen iguales. Cancela una edición inválida y restaura los valores iniciales.
+7. Desactiva la reconexión y provoca una pérdida de enlace: no debe reintentarse. Si se desactiva durante una espera de reconexión, debe cancelarse. Activada: sigue el máximo de tres intentos.
+8. Revisa tema oscuro, fuente al 150 %, rotación, y que los avisos de DHT inválido/paquete rechazado/datos desactualizados sigan visibles.
 
 ## App + placa física
 

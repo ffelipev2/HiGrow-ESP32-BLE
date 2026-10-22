@@ -1,0 +1,82 @@
+package cl.higrow.monitor.ui
+
+import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import cl.higrow.monitor.MonitorUiState
+import cl.higrow.monitor.ble.ConnectionState
+import cl.higrow.monitor.ble.ConnectionStatus
+import cl.higrow.monitor.ble.DiscoveredDevice
+import cl.higrow.monitor.data.*
+import kotlin.math.sin
+
+// Datos exclusivos del editor de diseño. MainActivity nunca accede a estas muestras.
+private fun previewState(connected: Boolean): MonitorUiState {
+    if (!connected) return MonitorUiState()
+    val samples = (0 until 32).map { index ->
+        val soil = 1820 + (sin(index / 3.0) * 70).toInt()
+        SensorData(24.6f + sin(index / 4.0).toFloat() * 0.7f,
+            62f + sin(index / 5.0).toFloat() * 3f, soil,
+            1500 + (sin(index / 3.0) * 120).toInt(), SoilState.fromAdc(soil),
+            1_790_000_000_000L + index * 2000L, index * 2000L)
+    }
+    return MonitorUiState(ConnectionState(ConnectionStatus.CONNECTED, "HiGrow-ESP32",
+        "Notificaciones habilitadas · cada 2 s", deviceAddress = "24:6F:28:3A:1B:7C"),
+        readings = SensorReadings(samples.last(), samples), ageSeconds = 2)
+}
+
+@Composable
+private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: SensorMetric? = null) {
+    HiGrowTheme {
+        Column {
+            Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White, style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.fillMaxWidth().background(ForestGreen).padding(4.dp))
+            Box(Modifier.weight(1f)) {
+                HiGrowApp(previewState(connected), {}, {}, {}, {}, {}, {}, initialTab = tab, initialDetail = detail)
+            }
+        }
+    }
+}
+
+@Preview(name = "01 Inicio vacío", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun DashboardEmptyPreview() { PanelPreview(connected = false) }
+@Preview(name = "02 Inicio conectado", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun DashboardConnectedPreview() { PanelPreview() }
+@Preview(name = "03 Gráficos", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun GraphsPreview() { PanelPreview(tab = 1) }
+@Preview(name = "04 Detalle", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun DetailPreview() { PanelPreview(detail = SensorMetric.TEMPERATURE) }
+@Preview(name = "05 Ajustes", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun SettingsPreview() { PanelPreview(tab = 3) }
+@Preview(name = "06 Historial", group = "Paneles HiGrow", widthDp = 393, heightDp = 800)
+@Composable fun HistoryPreview() { PanelPreview(tab = 2) }
+@Preview(name = "07 Modo oscuro", group = "Accesibilidad", widthDp = 393, heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable fun DarkPreview() { PanelPreview() }
+@Preview(name = "08 Texto grande", group = "Accesibilidad", widthDp = 320, heightDp = 720, fontScale = 1.5f)
+@Composable fun LargeFontPreview() { PanelPreview() }
+
+@Preview(name = "09 Selector BLE", group = "Paneles HiGrow", widthDp = 393, heightDp = 600)
+@Composable fun BleSelectorPreview() {
+    HiGrowTheme {
+        Column(Modifier.fillMaxSize().background(ForestGreen), verticalArrangement = Arrangement.Bottom) {
+            Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White,
+                style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(12.dp))
+            Surface(shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)) {
+                Box(Modifier.padding(top = 12.dp)) {
+                    ScanScreen(MonitorUiState(devices = listOf(
+                        DiscoveredDevice("24:6F:28:3A:1B:7C", "HiGrow-ESP32", -52),
+                        DiscoveredDevice("24:6F:28:3A:1B:7D", "HiGrow-ESP32", -71),
+                    )), {}, {}, {}, {})
+                }
+            }
+        }
+    }
+}

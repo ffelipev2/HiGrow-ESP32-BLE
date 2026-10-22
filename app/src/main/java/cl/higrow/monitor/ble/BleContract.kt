@@ -18,5 +18,6 @@ data class ConnectionState(
     val message: String = "Conecta tu HiGrow para empezar",
     val session: Int = 0,
     val connectedAtElapsed: Long? = null,
+    val deviceAddress: String? = null,
 )
 data class DiscoveredDevice(val address: String, val name: String, val rssi: Int)

@@ -44,6 +44,7 @@ class BleManager(private val context: Context) {
     private var retryCount = 0
     private var manualDisconnect = true
     private var ready = false
+    private var autoReconnect = true
     private var closed = false
     private var session = 0
 
@@ -241,7 +242,7 @@ class BleManager(private val context: Context) {
     private fun fail(message: String, retry: Boolean = true) {
         clearTimeout()
         releaseGatt()
-        if (retry && !manualDisconnect && retryCount < 3 && bluetoothEnabled()) {
+        if (retry && autoReconnect && !manualDisconnect && retryCount < 3 && bluetoothEnabled()) {
             val delay = longArrayOf(2000, 4000, 8000)[retryCount++]
             update(ConnectionStatus.RECONNECTING, "$message. Reintento $retryCount/3 en ${delay / 1000} s")
             val task = Runnable { reconnect = null; if (!manualDisconnect) connectTarget() }
@@ -269,13 +270,18 @@ class BleManager(private val context: Context) {
         target = null
         update(ConnectionStatus.DISCONNECTED, "Desconectado. Puedes volver a buscar.")
     }
+    fun setAutoReconnect(enabled: Boolean) {
+        autoReconnect = enabled
+        if (!enabled && connection.value.status == ConnectionStatus.RECONNECTING) disconnect()
+    }
     fun reportError(message: String) { update(ConnectionStatus.ERROR, message) }
     private fun update(status: ConnectionStatus, message: String) {
         val connectedAt = if (status == ConnectionStatus.CONNECTED) {
             connection.value.connectedAtElapsed ?: SystemClock.elapsedRealtime()
         } else null
         mutableConnection.value = ConnectionState(status,
-            if (target != null) BleContract.DEVICE_NAME else null, message, session, connectedAt)
+            if (target != null) BleContract.DEVICE_NAME else null, message, session, connectedAt,
+            runCatching { target?.address }.getOrNull())
     }
     private fun setTimeout(delay: Long, action: () -> Unit) {
         clearTimeout()

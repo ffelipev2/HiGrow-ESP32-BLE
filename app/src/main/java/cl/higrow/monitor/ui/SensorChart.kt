@@ -5,86 +5,118 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cl.higrow.monitor.data.SensorData
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.math.max
-import kotlin.math.min
 
-private fun axisValue(value: Float): String = String.format(Locale.getDefault(), "%.1f", value)
-private fun timeLabel(millis: Long): String = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(millis))
+private data class ChartBounds(val low: Float, val high: Float)
+private fun bounds(history: List<SensorData>, metric: SensorMetric, fixed: Boolean): ChartBounds {
+    if (fixed && metric != SensorMetric.TEMPERATURE) {
+        return ChartBounds(0f, if (metric == SensorMetric.HUMIDITY) 100f else 4095f)
+    }
+    val values = history.mapNotNull(metric::value)
+    val low = values.minOrNull() ?: 0f
+    val high = values.maxOrNull() ?: 1f
+    val padding = max((high - low) * 0.18f, if (metric.unit == "ADC") 10f else 0.5f)
+    return ChartBounds(if (metric == SensorMetric.TEMPERATURE) low - padding else max(0f, low - padding), high + padding)
+}
 
 @Composable
-fun SensorChart(title: String, unit: String, history: List<SensorData>, color: Color,
-    modifier: Modifier = Modifier, select: (SensorData) -> Float?) {
-    val values = history.mapNotNull(select)
-    val minimum = values.minOrNull() ?: 0f
-    val maximum = values.maxOrNull() ?: 1f
-    val margin = max((maximum - minimum) * 0.12f, if (unit == "ADC") 10f else 0.5f)
-    val bottom = if (unit == "°C") minimum - margin else max(0f, minimum - margin)
-    val top = if (unit == "% HR") min(100f, maximum + margin) else maximum + margin
-    val grid = MaterialTheme.colorScheme.outlineVariant
-    val description = if (values.isEmpty()) "$title: sin mediciones" else
-        "$title: ${values.size} mediciones en $unit, mínimo ${axisValue(minimum)}, máximo ${axisValue(maximum)}"
-    Card(modifier.semantics { contentDescription = description }, shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("$title · $unit", style = MaterialTheme.typography.titleSmall)
+fun SensorSparkline(history: List<SensorData>, metric: SensorMetric, modifier: Modifier = Modifier,
+    fixedScale: Boolean = false, grid: Boolean = false, dots: Boolean = false) {
+    val color = metric.ink()
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
+    val limits = bounds(history, metric, fixedScale)
+    Canvas(modifier) {
+        val inset = 3.dp.toPx()
+        val width = (size.width - inset * 2).coerceAtLeast(1f)
+        val height = (size.height - inset * 2).coerceAtLeast(1f)
+        if (grid) repeat(3) { i ->
+            val y = inset + height * i / 2f
+            drawLine(gridColor.copy(alpha = 0.6f), Offset(inset, y), Offset(inset + width, y), 0.5.dp.toPx())
+        }
+        if (history.isEmpty()) return@Canvas
+        val first = history.first().receivedAtElapsed
+        val span = (history.last().receivedAtElapsed - first).coerceAtLeast(1)
+        val segments = mutableListOf<MutableList<Offset>>()
+        var segment = mutableListOf<Offset>()
+        history.forEach { data ->
+            val value = metric.value(data)
+            if (value == null) {
+                if (segment.isNotEmpty()) segments.add(segment)
+                segment = mutableListOf()
+            } else {
+                val x = inset + (data.receivedAtElapsed - first).toFloat() / span * width
+                val y = inset + (1f - (value - limits.low) / (limits.high - limits.low).coerceAtLeast(0.01f)) * height
+                segment.add(Offset(x, y))
+            }
+        }
+        if (segment.isNotEmpty()) segments.add(segment)
+        segments.forEach { points ->
+            val line = Path().apply {
+                moveTo(points.first().x, points.first().y)
+                points.drop(1).forEach { lineTo(it.x, it.y) }
+            }
+            if (points.size > 1) {
+                val area = Path().apply {
+                    addPath(line)
+                    lineTo(points.last().x, inset + height)
+                    lineTo(points.first().x, inset + height)
+                    close()
+                }
+                drawPath(area, Brush.verticalGradient(listOf(color.copy(alpha = 0.14f), color.copy(alpha = 0.01f))))
+                drawPath(line, color, style = Stroke(1.8.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
+            if (dots || points.size == 1) points.forEach { drawCircle(color, 1.9.dp.toPx(), it) }
+        }
+    }
+}
+
+@Composable
+fun SensorChart(metric: SensorMetric, history: List<SensorData>, modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}) {
+    val values = history.mapNotNull(metric::value)
+    val limits = bounds(history, metric, fixed = true)
+    val color = metric.ink()
+    val description = if (values.isEmpty()) "${metric.title}: sin mediciones" else
+        "${metric.title}: ${values.size} mediciones, mínimo ${metric.format(values.min())}, máximo ${metric.format(values.max())} ${metric.unit}"
+    OutlinedCard(onClick, modifier.semantics { contentDescription = description }, shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))) {
+        Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("${metric.title} (${metric.unit})", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(metric.format(history.lastOrNull()?.let(metric::value)), color = color,
+                    style = MaterialTheme.typography.titleSmall)
+            }
             if (values.isEmpty()) {
-                Box(Modifier.fillMaxWidth().height(130.dp)) {
-                    Text("Esperando mediciones válidas", color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall)
+                Box(Modifier.fillMaxWidth().height(80.dp), contentAlignment = Alignment.Center) {
+                    Text("Esperando mediciones", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
-                Row(Modifier.height(130.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column(Modifier.width(54.dp).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-                        listOf(top, (top + bottom) / 2, bottom).forEach {
-                            Text(axisValue(it), style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.height(72.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(Modifier.width(36.dp).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+                        listOf(limits.high, (limits.high + limits.low) / 2f, limits.low).forEach {
+                            Text(if (metric.unit == "ADC") it.toInt().toString() else metric.format(it),
+                                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    Canvas(Modifier.weight(1f).fillMaxHeight()) {
-                        val inset = 5.dp.toPx()
-                        val width = size.width - 2 * inset
-                        val height = size.height - 2 * inset
-                        repeat(3) { i ->
-                            val y = inset + height * i / 2
-                            drawLine(grid, Offset(inset, y), Offset(inset + width, y), 1.dp.toPx())
-                        }
-                        val first = history.first().receivedAtElapsed
-                        val span = (history.last().receivedAtElapsed - first).coerceAtLeast(1)
-                        val path = Path()
-                        var started = false
-                        history.forEach { data ->
-                            val value = select(data)
-                            if (value == null) started = false // No unir a través de errores DHT.
-                            else {
-                                val x = inset + (data.receivedAtElapsed - first).toFloat() / span * width
-                                val y = inset + (1 - (value - bottom) / (top - bottom).coerceAtLeast(0.01f)) * height
-                                if (started) path.lineTo(x, y) else path.moveTo(x, y)
-                                started = true
-                                drawCircle(color, 2.5.dp.toPx(), Offset(x, y))
-                            }
-                        }
-                        drawPath(path, color, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
-                    }
+                    SensorSparkline(history, metric, Modifier.weight(1f).fillMaxHeight(),
+                        fixedScale = true, grid = true, dots = true)
                 }
-                Row(Modifier.fillMaxWidth().padding(start = 62.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(timeLabel(history.first().receivedAtMillis), style = MaterialTheme.typography.labelSmall)
-                    Text(timeLabel(history.last().receivedAtMillis), style = MaterialTheme.typography.labelSmall)
+                Row(Modifier.fillMaxWidth().padding(start = 42.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(readingTime(history.first().receivedAtMillis), style = MaterialTheme.typography.labelSmall)
+                    if (history.size > 2) Text(readingTime(history[history.size / 2].receivedAtMillis), style = MaterialTheme.typography.labelSmall)
+                    Text(readingTime(history.last().receivedAtMillis), style = MaterialTheme.typography.labelSmall)
                 }
-                Text("Hora de recepción · ${history.size}/60 muestras", style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
