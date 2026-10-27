@@ -49,6 +49,10 @@ fun ScanScreen(state: MonitorUiState, onScan: () -> Unit, onStopScan: () -> Unit
                         Text(state.connection.deviceName ?: "HiGrow-ESP32", style = MaterialTheme.typography.titleSmall)
                         state.connection.deviceAddress?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                         Text("Conectado", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                        state.readings.latest?.let { data ->
+                            Text("Última recepción: ${readingTime(data.receivedAtMillis)}",
+                                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
             }

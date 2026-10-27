@@ -2,11 +2,13 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
-## Brote, tu compañero de planta · versión 1.3.1
+## Brote, tu compañero de planta · versión 1.3.2
 
 Inicio incorpora una carita de planta dibujada con Canvas nativo: respira, parpadea, mueve las hojas y saluda al tocarla. Su expresión cambia con el sustrato, la luz, la temperatura y la humedad ambiental recibidos por BLE. **Ver condiciones** explica las lecturas y las reglas que originan ese estado. Los paneles usan bordes suaves y degradados en colores de cada sensor, con una paleta verde más profunda en modo oscuro.
 
 Las condiciones se combinan: por ejemplo, **Sed y poca luz** muestra ambas en el título, el mensaje y los rasgos de la carita. También se combinan poca luz con aire seco, temperatura y lecturas incompletas. Al tocar a Brote conserva su saludo animado y ya no aparece el recuadro de pulsación.
+
+**Inicio compacto en teléfono:** reúne el estado de Brote, la conexión y las cuatro mediciones en una cuadrícula 2 × 2. Primero mide el resumen y distribuye el espacio restante entre las tarjetas, conservando cifras grandes y minigráficas. **Ver condiciones** abre las explicaciones completas; al tocar la franja de conexión aparecen MAC, hora de recepción y controles BLE. Con texto grande, ventanas muy cortas o varios avisos, se mantiene el desplazamiento para no recortar información.
 
 Sin conexión, Brote descansa; al conectar espera las primeras muestras. Con datos antiguos o incompletos indica el problema. No muestra «Feliz» con datos ausentes. La luz y el sustrato conservan sus valores **ADC reales**, sin inventar lux ni porcentajes. La temperatura y la humedad usan referencias generales explicadas en el panel, no un perfil de especie.
 

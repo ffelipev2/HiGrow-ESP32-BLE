@@ -21,19 +21,21 @@ import cl.higrow.monitor.data.*
 @Composable
 fun SensorCard(metric: SensorMetric, data: SensorData?, history: List<SensorData>,
     thresholds: LightThresholds, onClick: () -> Unit, modifier: Modifier = Modifier,
-    expanded: Boolean = false, minHeight: Dp = 180.dp) {
+    expanded: Boolean = false, minHeight: Dp = 180.dp, dense: Boolean = false) {
     val tint = metric.tint()
     val surface = MaterialTheme.colorScheme.surface
     Card(onClick, modifier.heightIn(min = minHeight), shape = RoundedCornerShape(24.dp),
         border = BorderStroke(1.dp, metric.ink().copy(alpha = 0.18f)),
         colors = CardDefaults.cardColors(containerColor = tint)) {
-        val contentModifier = if (expanded) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
+        val contentModifier = if (expanded || dense) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
         Column(contentModifier.background(Brush.linearGradient(listOf(tint, lerp(tint, surface, 0.36f))))
-            .padding(if (expanded) 20.dp else 15.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            if (expanded) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(32.dp))
-                    Text(metric.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            .padding(if (dense) 12.dp else if (expanded) 20.dp else 15.dp),
+            verticalArrangement = Arrangement.spacedBy(if (dense) 4.dp else 7.dp)) {
+            if (expanded || dense) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (dense) 6.dp else 12.dp)) {
+                    Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(if (dense) 20.dp else 32.dp))
+                    Text(metric.title, style = if (dense) MaterialTheme.typography.labelMedium else MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f))
                 }
             } else {
                 Icon(metric.icon, null, tint = metric.ink(), modifier = Modifier.size(29.dp))
@@ -49,14 +51,16 @@ fun SensorCard(metric: SensorMetric, data: SensorData?, history: List<SensorData
                     else Text("ADC filtrado", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 SensorMetric.LIGHT -> if (data != null) StateBadge(lightState(data.lightAdc, thresholds).label)
                     else Text("ADC", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else -> Text(if (data == null) "Sin lectura" else if (metric.value(data) == null) "DHT11 sin lectura" else "DHT11",
+                else -> if (!dense || data == null || metric.value(data) == null) Text(
+                    if (data == null) "Sin lectura" else if (metric.value(data) == null) "DHT11 sin lectura" else "DHT11",
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (expanded) {
-                Box(Modifier.weight(1f).fillMaxWidth().heightIn(min = 64.dp).padding(top = 12.dp),
+            if (expanded || dense) {
+                Box(Modifier.weight(1f).fillMaxWidth().heightIn(min = if (dense) 20.dp else 64.dp)
+                    .padding(top = if (dense) 2.dp else 12.dp),
                     contentAlignment = Alignment.Center) {
                     if (history.none { metric.value(it) != null }) {
-                        Text("Sin datos para graficar", style = MaterialTheme.typography.bodySmall,
+                        Text("Sin datos para graficar", style = if (dense) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else SensorSparkline(history, metric, Modifier.fillMaxSize())
                 }

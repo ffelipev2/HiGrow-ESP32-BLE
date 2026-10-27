@@ -1,5 +1,13 @@
 # Registro de validación local
 
+## Inicio compacto 1.3.2 — 27 de octubre de 2026
+
+- Se incorporó una vista de conjunto de teléfono con Brote reducido, franja BLE y cuatro mediciones en 2 × 2. La altura de los sensores se calcula después de medir la cabecera real; se conserva desplazamiento cuando no cabe el mínimo legible.
+- MAC, hora exacta de recepción y desconexión se consultan desde la franja BLE; los consejos de Brote siguen en **Ver condiciones**. No se cambian lecturas, unidades, umbrales ni protocolo.
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**; **31 pruebas JUnit correctas**, Lint con **0 errores y 10 advertencias**.
+- APK **1.3.2**, código **7**, en `app/build/outputs/apk/debug/app-debug.apk`. Se añadieron cinco vistas de diseño de Inicio compacto para teléfonos, condiciones combinadas y variaciones de fuente/altura.
+- ADB no mostró dispositivos conectados. La captura enviada por el usuario corresponde a la versión anterior y se usó para identificar el contenido que no cabía; no constituye una captura de la corrección. Las nuevas vistas compilan, pero no se inspeccionaron visualmente en un dispositivo en esta sesión.
+
 ## Pulsación y condiciones combinadas 1.3.1 — 27 de octubre de 2026
 
 - Se desactivó la indicación rectangular de pulsación del botón de Brote; se conservan el salto/saludo, el rol de botón y la descripción accesible.

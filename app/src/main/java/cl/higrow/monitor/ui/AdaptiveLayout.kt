@@ -15,16 +15,16 @@ val LocalScreenViewport = staticCompositionLocalOf { ScreenViewport() }
 
 @Composable
 fun ResponsiveRows(items: List<@Composable (Modifier) -> Unit>, minCellWidth: Int = 280,
-    maxColumns: Int = 2, compactPairs: Boolean = false) {
+    maxColumns: Int = 2, compactPairs: Boolean = false, spacing: Dp = 12.dp) {
     val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val readableWidth = maxWidth.value / fontScale
         val fitted = if (compactPairs && readableWidth in 320f..559f) 2 else
-            ((readableWidth + 12) / (minCellWidth + 12)).toInt().coerceIn(1, maxColumns)
+            ((readableWidth + spacing.value) / (minCellWidth + spacing.value)).toInt().coerceIn(1, maxColumns)
         val columns = if (items.size == 4 && fitted == 3) 2 else fitted
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
             items.chunked(columns).forEach { row ->
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(spacing)) {
                     row.forEach { content -> content(Modifier.weight(1f).fillMaxHeight()) }
                     repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                 }

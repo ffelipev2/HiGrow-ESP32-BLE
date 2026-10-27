@@ -33,7 +33,8 @@ fun PlantSignal.metric(): SensorMetric = when (this) {
 }
 
 @Composable
-fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, compact: Boolean = false) {
+fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, compact: Boolean = false,
+    dense: Boolean = false) {
     val assessment = state.plantAssessment()
     var details by rememberSaveable { mutableStateOf(false) }
     var greetings by rememberSaveable(assessment.activeMoods) { mutableIntStateOf(0) }
@@ -51,24 +52,39 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
         color = Color(0xFF143F2E), contentColor = Color.White,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5FAD78).copy(alpha = 0.35f))) {
         BoxWithConstraints(Modifier.background(Brush.linearGradient(
-            listOf(Color(0xFF173F30), Color(0xFF102A21), Color(0xFF214F32)))).padding(18.dp)) {
+            listOf(Color(0xFF173F30), Color(0xFF102A21), Color(0xFF214F32)))).padding(if (dense) 12.dp else 18.dp)) {
             val stacked = maxWidth < (if (compact) 228.dp else 292.dp) || LocalDensity.current.fontScale > 1.3f
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (dense) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Outlined.Eco, null, tint = accent, modifier = Modifier.size(20.dp))
-                    Text("Estado de tu planta", style = MaterialTheme.typography.titleSmall)
-                }
-                if (stacked) {
-                    PlantFace(assessment.mood, assessment.title, Modifier.size(144.dp).align(Alignment.CenterHorizontally),
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(when (greetings % 3) {
+                            1 -> "¡Hola! Soy Brote"
+                            2 -> "Aquí estoy contigo"
+                            else -> "Estado de tu planta"
+                        }, style = MaterialTheme.typography.labelSmall, color = Color(0xFFD2E3D4))
+                        CompanionCopy(assessment, copy, accent, onDetails = { details = true }, dense = true)
+                    }
+                    PlantFace(assessment.mood, assessment.title, Modifier.size(92.dp),
                         activeMoods = assessment.activeMoods) { greetings++ }
-                    CompanionCopy(assessment, copy, accent, onDetails = { details = true })
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Column(Modifier.weight(1f)) {
-                            CompanionCopy(assessment, copy, accent, onDetails = { details = true })
-                        }
-                        PlantFace(assessment.mood, assessment.title, Modifier.size(if (compact) 104.dp else 136.dp),
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Outlined.Eco, null, tint = accent, modifier = Modifier.size(20.dp))
+                        Text("Estado de tu planta", style = MaterialTheme.typography.titleSmall)
+                    }
+                    if (stacked) {
+                        PlantFace(assessment.mood, assessment.title, Modifier.size(144.dp).align(Alignment.CenterHorizontally),
                             activeMoods = assessment.activeMoods) { greetings++ }
+                        CompanionCopy(assessment, copy, accent, onDetails = { details = true })
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Column(Modifier.weight(1f)) {
+                                CompanionCopy(assessment, copy, accent, onDetails = { details = true })
+                            }
+                            PlantFace(assessment.mood, assessment.title, Modifier.size(if (compact) 104.dp else 136.dp),
+                                activeMoods = assessment.activeMoods) { greetings++ }
+                        }
                     }
                 }
             }
@@ -78,10 +94,12 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
 }
 
 @Composable
-private fun CompanionCopy(assessment: PlantAssessment, copy: String, accent: Color, onDetails: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(assessment.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = accent)
-        Text(copy, style = MaterialTheme.typography.bodySmall, color = Color(0xFFD2E3D4))
+private fun CompanionCopy(assessment: PlantAssessment, copy: String, accent: Color, onDetails: () -> Unit,
+    dense: Boolean = false) {
+    Column(verticalArrangement = Arrangement.spacedBy(if (dense) 4.dp else 8.dp)) {
+        Text(assessment.title, style = if (dense) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold, color = accent)
+        if (!dense) Text(copy, style = MaterialTheme.typography.bodySmall, color = Color(0xFFD2E3D4))
         TextButton(onClick = onDetails, contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.textButtonColors(contentColor = accent)) {
             Text("Ver condiciones", style = MaterialTheme.typography.labelMedium)

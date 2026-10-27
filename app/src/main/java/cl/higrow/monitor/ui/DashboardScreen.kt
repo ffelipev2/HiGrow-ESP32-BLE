@@ -14,6 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import cl.higrow.monitor.MonitorUiState
 import cl.higrow.monitor.ble.ConnectionStatus
@@ -23,6 +26,10 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
     onDisconnect: () -> Unit) {
     val viewport = LocalScreenViewport.current
     val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
+    if (viewport.width < 600.dp && viewport.width.value / fontScale >= 288f && fontScale <= 1.25f) {
+        DashboardOverview(state, onConnection, onSensor)
+        return
+    }
     val wide = viewport.width.value / fontScale >= 900f && viewport.height >= 480.dp
     if (wide) {
         // Measure against the viewport before the page scrolls, so the sensor area
@@ -68,6 +75,81 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
         ResponsiveRows(cards, minCellWidth = 240, compactPairs = true)
         DeviceBar(state, onConnection)
         ConnectionFooter(state, onDisconnect)
+    }
+}
+
+private enum class OverviewSlot { SUMMARY, SENSORS }
+
+@Composable
+private fun DashboardOverview(state: MonitorUiState, onConnection: () -> Unit, onSensor: (SensorMetric) -> Unit) {
+    val viewport = LocalScreenViewport.current
+    // Measure the actual summary first: combined conditions and errors can wrap.
+    // Give the remaining viewport height to the four cards in the same layout pass.
+    // Minimum readable card sizes can still make the surrounding page scroll on
+    // unusually short windows; neither values nor warnings are clipped to fit.
+    SubcomposeLayout(Modifier.fillMaxWidth()) { constraints ->
+        val childConstraints = constraints.copy(minWidth = constraints.maxWidth, minHeight = 0, maxHeight = Constraints.Infinity)
+        val gap = 8.dp.roundToPx()
+        val summary = subcompose(OverviewSlot.SUMMARY) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                PlantCompanionCard(state, dense = true)
+                ConnectionStrip(state, onConnection)
+                DashboardAlerts(state)
+                if (state.connection.status == ConnectionStatus.ERROR) Notice(state.connection.message)
+            }
+        }.single().measure(childConstraints)
+        // HiGrowApp adds a final 12 dp spacer after the screen content.
+        val cardHeight = ((viewport.height.roundToPx() - summary.height - gap * 2 - 12.dp.roundToPx()) / 2)
+            .coerceAtLeast(148.dp.roundToPx()).toDp()
+        val sensors = subcompose(OverviewSlot.SENSORS) {
+            val cards: List<@Composable (Modifier) -> Unit> = SensorMetric.entries.map { metric ->
+                { modifier -> SensorCard(metric, state.readings.latest, state.readings.history, state.lightThresholds,
+                    { onSensor(metric) }, modifier, minHeight = cardHeight, dense = true) }
+            }
+            ResponsiveRows(cards, minCellWidth = 140, spacing = 8.dp)
+        }.single().measure(childConstraints)
+        layout(constraints.maxWidth, summary.height + gap + sensors.height) {
+            summary.placeRelative(0, 0)
+            sensors.placeRelative(0, summary.height + gap)
+        }
+    }
+}
+
+@Composable
+private fun ConnectionStrip(state: MonitorUiState, onConnection: () -> Unit) {
+    val connected = state.connection.status == ConnectionStatus.CONNECTED
+    val busy = state.connection.status in listOf(ConnectionStatus.SCANNING, ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING)
+    val dot = when {
+        connected && !state.stale -> MaterialTheme.colorScheme.primary
+        busy -> Color(0xFFE6A000)
+        else -> MaterialTheme.colorScheme.error
+    }
+    Surface(onClick = onConnection, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column {
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.size(8.dp).background(dot, CircleShape))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(if (connected) state.connection.deviceName ?: "HiGrow-ESP32" else state.connection.status.label,
+                        style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(if (connected) when {
+                        state.stale -> "Conectado · Lectura desactualizada"
+                        state.ageSeconds != null -> "Conectado · hace ${state.ageSeconds} s"
+                        else -> "Conectado · Esperando datos"
+                    } else if (busy) "Toca para ver la conexión" else "Toca para buscar tu HiGrow",
+                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (connected) {
+                    Icon(Icons.Outlined.BluetoothConnected, "Gestionar conexión BLE", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Outlined.ExpandMore, null, Modifier.size(18.dp))
+                } else TextButton(onConnection) {
+                    Text(if (busy) "Ver BLE" else "Conectar", style = MaterialTheme.typography.labelMedium)
+                }
+            }
+            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().height(3.dp))
+        }
     }
 }
 

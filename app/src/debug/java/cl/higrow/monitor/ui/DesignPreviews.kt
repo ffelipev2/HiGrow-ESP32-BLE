@@ -122,6 +122,18 @@ private fun previewForMood(mood: PlantMood, extraMood: PlantMood? = null): Monit
 @Preview(name = "27 Brote · Sed y poca luz", group = "Brote", widthDp = 393, heightDp = 850)
 @Composable fun BroteCombinedPreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY, PlantMood.LOW_LIGHT)) }
 
+@Preview(name = "28 Resumen · Teléfono 393 × 850", group = "Inicio en una pantalla", widthDp = 393, heightDp = 850,
+    uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable fun OverviewPhonePreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY)) }
+@Preview(name = "29 Resumen · Teléfono 360 × 740", group = "Inicio en una pantalla", widthDp = 360, heightDp = 740)
+@Composable fun OverviewSmallPhonePreview() { PanelPreview() }
+@Preview(name = "30 Resumen · Condiciones combinadas", group = "Inicio en una pantalla", widthDp = 393, heightDp = 850)
+@Composable fun OverviewCombinedPreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY, PlantMood.LOW_LIGHT)) }
+@Preview(name = "31 Resumen · Fuente 125 %", group = "Inicio en una pantalla", widthDp = 393, heightDp = 850, fontScale = 1.25f)
+@Composable fun OverviewFontPreview() { PanelPreview() }
+@Preview(name = "32 Resumen · Ventana corta", group = "Inicio en una pantalla", widthDp = 320, heightDp = 640)
+@Composable fun OverviewShortPreview() { PanelPreview() }
+
 @Preview(name = "25 Brote · Expresiones", group = "Brote", widthDp = 393, heightDp = 700)
 @Composable fun BroteExpressionsPreview() {
     HiGrowTheme {

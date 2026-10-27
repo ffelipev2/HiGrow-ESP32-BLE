@@ -4,6 +4,7 @@
 local.properties
 **/build/
 .tools/
+.codex-remote-attachments/
 *.iml
 *.jks
 captures/

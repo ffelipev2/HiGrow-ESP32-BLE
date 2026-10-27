@@ -1,10 +1,10 @@
-# Brote — compañero interactivo de HiGrow 1.3.1
+# Brote — compañero interactivo de HiGrow 1.3.2
 
 Brote es un personaje vectorial de Compose Canvas. La app lo dibuja localmente, sin imágenes descargadas, servicios externos ni datos simulados en `MainActivity`. Sus colores, ojos y boca responden a las últimas lecturas válidas de la conexión actual. El movimiento de respiración, hojas y parpadeo se limita a la composición visible y las animaciones usan el sistema de animación de Compose.
 
 ## Interacción
 
-- **Tocar la carita:** hace un pequeño salto/saludo y alterna el mensaje entre resumen, saludo y consejo, sin recuadro ni efecto de pulsación rectangular. Se conserva el botón accesible para teclado y lector de pantalla. El saludo no cambia el estado calculado ni sustituye las lecturas.
+- **Tocar la carita:** hace un pequeño salto/saludo, sin recuadro ni efecto de pulsación rectangular. En Inicio compacto alterna el saludo de la cabecera; en el panel completo alterna resumen, saludo y consejo. Las explicaciones y consejos completos siempre están en **Ver condiciones**. Se conserva el botón accesible para teclado y lector de pantalla. El saludo no cambia el estado calculado ni sustituye las lecturas.
 - **Ver condiciones:** abre un diálogo con los cuatro sensores, sus valores actuales y los criterios de la expresión. Se puede desplazar el contenido con texto grande.
 - **Cambiar los umbrales de luminosidad en Ajustes:** actualiza también la expresión de Brote.
 - La cara es un botón accesible con descripción de su estado; la expresión se acompaña siempre de texto.
@@ -35,7 +35,7 @@ Los estados de desconexión, espera o datos antiguos son exclusivos: no se mezcl
 
 ## Distribución y vistas de diseño
 
-En ventanas amplias Brote se integra en la columna lateral desplazable de Inicio. A su lado quedan las cuatro tarjetas de sensores, con sus minigráficas reales. En teléfono aparece un panel superior con la carita junto al resumen; con poco ancho o texto grande se apilan. Se mantiene el modo claro/oscuro.
+En ventanas amplias Brote se integra en la columna lateral desplazable de Inicio. A su lado quedan las cuatro tarjetas de sensores, con sus minigráficas reales. En teléfono aparece un panel superior compacto con el título del estado combinado y una carita de 92 dp. Los párrafos de explicación quedan en **Ver condiciones**, para dejar espacio a las cuatro mediciones. Con poco ancho o texto grande se usa la presentación completa y desplazable. Se mantiene el modo claro/oscuro.
 
 `app/src/debug/java/cl/higrow/monitor/ui/DesignPreviews.kt` incluye el grupo **Brote**:
 
@@ -43,6 +43,7 @@ En ventanas amplias Brote se integra en la columna lateral desplazable de Inicio
 - `BroteExpressionsPreview`: galería de las once expresiones.
 - `BroteCombinedPreview`: sustrato seco y poca luz en una misma lectura.
 - `BroteInteractivePreview`: selector de escenarios simples y combinados para usar con el modo interactivo de las vistas previas de Android Studio.
+- El grupo **Inicio en una pantalla** incluye teléfonos de 393 × 850 y 360 × 740 dp, condiciones combinadas, fuente al 125 % y una ventana corta de 320 × 640 dp.
 
 Estos escenarios están en el origen `debug` y llevan la etiqueta **VISTA PREVIA · DATOS DE DISEÑO**. La app normal no presenta ese selector ni utiliza sus muestras.
 
