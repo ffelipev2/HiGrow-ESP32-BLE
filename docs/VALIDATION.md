@@ -1,4 +1,15 @@
-# Validación local — 22 de octubre de 2026
+# Registro de validación local
+
+## Brote e interfaz 1.3.0 — 27 de octubre de 2026
+
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**.
+- **26 pruebas JUnit correctas, 0 fallos y 0 errores**: las 13 existentes y 13 nuevas de `PlantAssessmentTest`, con ausencia de datos, frescura, límites y prioridad de condiciones simultáneas.
+- Lint: **0 errores y 10 advertencias** de configuración/dependencias; no se añadieron dependencias para dibujar o animar al personaje.
+- APK debug generado: `app/build/outputs/apk/debug/app-debug.apk`, versión **1.3.0**, código **5**.
+- Se añadieron vistas de diseño con las once expresiones y un selector interactivo de escenarios, independientes de las lecturas de `MainActivity`.
+- ADB no mostró dispositivos conectados. No se instaló esta versión en el teléfono/tablet ni se verificó de nuevo el enlace BLE. La revisión visual e interacción en Android Studio no se completaron en esta sesión; las vistas de diseño compiladas quedan disponibles para revisarlas. No se presentan las capturas anteriores como comprobación de 1.3.0.
+
+Detalles de reglas, interacción y límites: [BROTE.md](BROTE.md).
 
 ## Corrección de Inicio en tablet 1.2.1
 

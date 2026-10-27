@@ -3,8 +3,10 @@ package cl.higrow.monitor.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,13 +35,14 @@ private fun previewState(connected: Boolean): MonitorUiState {
 }
 
 @Composable
-private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: SensorMetric? = null) {
+private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: SensorMetric? = null,
+    sampleState: MonitorUiState? = null) {
     HiGrowTheme {
         Column {
             Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White, style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.fillMaxWidth().background(ForestGreen).padding(4.dp))
             Box(Modifier.weight(1f)) {
-                HiGrowApp(previewState(connected), {}, {}, {}, {}, {}, {}, initialTab = tab, initialDetail = detail)
+                HiGrowApp(sampleState ?: previewState(connected), {}, {}, {}, {}, {}, {}, initialTab = tab, initialDetail = detail)
             }
         }
     }
@@ -88,6 +91,71 @@ private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: Sensor
 @Composable fun TabletPortraitDashboardPreview() { PanelPreview() }
 @Preview(name = "21 Tablet · Inicio texto grande", group = "Tablet", widthDp = 1333, heightDp = 800, fontScale = 1.5f)
 @Composable fun TabletDashboardLargeFontPreview() { PanelPreview() }
+
+private fun previewForMood(mood: PlantMood): MonitorUiState {
+    if (mood == PlantMood.OFFLINE) return MonitorUiState()
+    val state = previewState(true)
+    if (mood == PlantMood.WAITING) return state.copy(readings = SensorReadings())
+    if (mood == PlantMood.STALE) return state.copy(stale = true, ageSeconds = 12)
+    val history = state.readings.history.map { data -> when (mood) {
+        PlantMood.THIRSTY -> data.copy(soilAdc = 2900, soilState = SoilState.DRY)
+        PlantMood.HOT -> data.copy(temperatureC = 36f)
+        PlantMood.COLD -> data.copy(temperatureC = 10f)
+        PlantMood.LOW_LIGHT -> data.copy(lightAdc = 4095)
+        PlantMood.DRY_AIR -> data.copy(humidityPercent = 20f)
+        PlantMood.HUMID_AIR -> data.copy(humidityPercent = 90f)
+        PlantMood.INCOMPLETE -> data.copy(temperatureC = null, humidityPercent = null)
+        else -> data
+    } }
+    return state.copy(readings = SensorReadings(history.last(), history))
+}
+
+@Preview(name = "22 Brote · Sed", group = "Brote", widthDp = 393, heightDp = 850)
+@Composable fun BroteThirstyPreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY)) }
+@Preview(name = "23 Brote · Sin datos", group = "Brote", widthDp = 393, heightDp = 850)
+@Composable fun BroteOfflinePreview() { PanelPreview(connected = false) }
+@Preview(name = "24 Brote · Texto grande", group = "Brote", widthDp = 320, heightDp = 720, fontScale = 1.5f)
+@Composable fun BroteLargeTextPreview() { PanelPreview() }
+
+@Preview(name = "25 Brote · Expresiones", group = "Brote", widthDp = 393, heightDp = 700)
+@Composable fun BroteExpressionsPreview() {
+    HiGrowTheme {
+        Column(Modifier.fillMaxSize().background(Color(0xFF143F2E)).padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White, style = MaterialTheme.typography.labelSmall)
+            PlantMood.entries.chunked(3).forEach { row ->
+                Row(Modifier.fillMaxWidth()) {
+                    row.forEach { mood ->
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            PlantFace(mood, mood.name, Modifier.size(102.dp))
+                            Text(previewForMood(mood).plantAssessment().title, color = Color.White,
+                                style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                    repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "26 Brote · Interacción", group = "Brote", widthDp = 393, heightDp = 850)
+@Composable fun BroteInteractivePreview() {
+    var mood by remember { mutableStateOf(PlantMood.HAPPY) }
+    HiGrowTheme {
+        Column {
+            Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White,
+                modifier = Modifier.fillMaxWidth().background(ForestGreen).padding(4.dp), style = MaterialTheme.typography.labelSmall)
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf(PlantMood.HAPPY, PlantMood.THIRSTY, PlantMood.LOW_LIGHT, PlantMood.HOT,
+                    PlantMood.INCOMPLETE, PlantMood.OFFLINE).forEach { choice ->
+                    FilterChip(mood == choice, { mood = choice }, label = { Text(previewForMood(choice).plantAssessment().title) })
+                }
+            }
+            Box(Modifier.weight(1f)) { HiGrowApp(previewForMood(mood), {}, {}, {}, {}, {}, {}) }
+        }
+    }
+}
 
 @Preview(name = "09 Selector BLE", group = "Paneles HiGrow", widthDp = 393, heightDp = 600)
 @Composable fun BleSelectorPreview() {

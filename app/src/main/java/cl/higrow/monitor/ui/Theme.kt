@@ -14,6 +14,7 @@ private val LightColors = lightColorScheme(
     primary = Color(0xFF087C23), onPrimary = Color.White,
     primaryContainer = Color(0xFFE3F6DA), onPrimaryContainer = Color(0xFF174523),
     secondary = Color(0xFF526258), background = ForestGreen,
+    secondaryContainer = Color(0xFFE7F2E4), onSecondaryContainer = Color(0xFF20432A),
     surface = Color(0xFFFCFDFC), surfaceVariant = Color(0xFFF1F5F1),
     onSurface = Color(0xFF162119), onSurfaceVariant = Color(0xFF667168),
     outline = Color(0xFFAFB9B1), outlineVariant = Color(0xFFE2E8E2), error = Color(0xFFC73036),
@@ -22,9 +23,10 @@ private val DarkColors = darkColorScheme(
     primary = Color(0xFF91DFA1), onPrimary = Color(0xFF073915),
     primaryContainer = Color(0xFF284D2D), onPrimaryContainer = Color(0xFFCDF0CD),
     secondary = Color(0xFFADC7B0), background = Color(0xFF0E251A),
-    surface = Color(0xFF15221B), surfaceVariant = Color(0xFF203127),
+    surface = Color(0xFF10251A), surfaceVariant = Color(0xFF193A2B),
+    secondaryContainer = Color(0xFF284B35), onSecondaryContainer = Color(0xFFDCF0D6),
     onSurface = Color(0xFFEDF4EC), onSurfaceVariant = Color(0xFFB2C2B4),
-    outlineVariant = Color(0xFF354B3C),
+    outline = Color(0xFF66836E), outlineVariant = Color(0xFF2E513C),
 )
 private val HiGrowTypography = Typography(
     titleLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 21.sp, lineHeight = 27.sp),

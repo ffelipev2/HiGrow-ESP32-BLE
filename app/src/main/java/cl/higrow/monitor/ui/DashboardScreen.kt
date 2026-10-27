@@ -29,14 +29,13 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
         // uses both dimensions instead of leaving an empty region below one row.
         val height = (viewport.height - 12.dp).coerceAtLeast((440 * fontScale).dp + 12.dp)
         Row(Modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            OutlinedCard(Modifier.width((280 * fontScale).dp).fillMaxHeight(), shape = RoundedCornerShape(18.dp)) {
-                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    ConnectionPanel(state, onConnection, stackActions = true)
-                    DashboardAlerts(state)
-                    DeviceBar(state, onConnection)
-                    ConnectionFooter(state, onDisconnect)
-                }
+            Column(Modifier.width((300 * fontScale).dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                PlantCompanionCard(state, compact = true)
+                ConnectionPanel(state, onConnection, stackActions = true)
+                DashboardAlerts(state)
+                DeviceBar(state, onConnection)
+                ConnectionFooter(state, onDisconnect)
             }
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SensorMetric.entries.chunked(2).forEach { row ->
@@ -55,9 +54,10 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
     val alertCount = listOf(state.stale, state.readings.packetError != null,
         state.readings.latest?.let { it.temperatureC == null } == true).count { it }
     val cardHeight = if (expandedCards) {
-        ((viewport.height - ((280 + alertCount * 64) * fontScale).dp) / 2).coerceAtLeast(220.dp)
+        ((viewport.height - ((500 + alertCount * 64) * fontScale).dp) / 2).coerceAtLeast(220.dp)
     } else 180.dp
     Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+        PlantCompanionCard(state)
         ConnectionPanel(state, onConnection)
         DashboardAlerts(state)
         val data = state.readings.latest
@@ -118,30 +118,34 @@ private fun ConnectionPanel(state: MonitorUiState, onConnection: () -> Unit, sta
     val busy = connection.status in listOf(ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING, ConnectionStatus.SCANNING)
     val dot = if (connected && !state.stale) MaterialTheme.colorScheme.primary else if (busy) Color(0xFFE6A000) else MaterialTheme.colorScheme.error
     val largeFont = stackActions || LocalDensity.current.fontScale > 1.25f
-    Column(Modifier.fillMaxWidth().padding(horizontal = 3.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.size(10.dp).background(dot, CircleShape))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(connection.status.label, style = MaterialTheme.typography.titleSmall)
-                if (connected) {
-                    Text(connection.deviceName ?: "HiGrow-ESP32", style = MaterialTheme.typography.titleSmall)
-                    connection.deviceAddress?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                } else Text(if (busy) connection.message else "Conecta tu dispositivo para comenzar",
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Box(Modifier.size(10.dp).background(dot, CircleShape))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(connection.status.label, style = MaterialTheme.typography.titleSmall)
+                    if (connected) {
+                        Text(connection.deviceName ?: "HiGrow-ESP32", style = MaterialTheme.typography.titleSmall)
+                        connection.deviceAddress?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    } else Text(if (busy) connection.message else "Conecta tu dispositivo para comenzar",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (!largeFont) {
+                    if (connected) ReceptionStatus(state) else ConnectButton(onConnection, busy)
+                }
             }
-            if (!largeFont) {
+            if (largeFont) {
                 if (connected) ReceptionStatus(state) else ConnectButton(onConnection, busy)
             }
+            if (connected && state.readings.latest != null) Text("Última recepción: ${readingTime(state.readings.latest.receivedAtMillis)}",
+                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (connection.status == ConnectionStatus.ERROR) Text(connection.message, color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall)
+            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().height(3.dp))
         }
-        if (largeFont) {
-            if (connected) ReceptionStatus(state) else ConnectButton(onConnection, busy)
         }
-        if (connected && state.readings.latest != null) Text("Última recepción: ${readingTime(state.readings.latest.receivedAtMillis)}",
-            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        if (connection.status == ConnectionStatus.ERROR) Text(connection.message, color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodySmall)
-        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().height(3.dp))
-    }
 }
 @Composable private fun ConnectButton(onClick: () -> Unit, busy: Boolean) {
     Button(onClick, contentPadding = PaddingValues(horizontal = 13.dp, vertical = 10.dp), shape = RoundedCornerShape(50)) {
