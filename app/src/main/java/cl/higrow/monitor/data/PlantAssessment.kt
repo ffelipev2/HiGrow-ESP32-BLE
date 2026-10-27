@@ -12,6 +12,7 @@ data class PlantAssessment(
     val summary: String,
     val tip: String,
     val observations: List<PlantObservation>,
+    val activeMoods: List<PlantMood> = listOf(mood),
 ) {
     companion object {
         // These are visible, general-purpose UI reference ranges, not a species profile.
@@ -62,17 +63,38 @@ data class PlantAssessment(
             )
             // Known conditions still matter when the DHT fails. Missing readings and
             // rejected packets must never result in a reassuring happy expression.
-            val mood = when {
-                soil == SoilState.DRY -> PlantMood.THIRSTY
-                temperature != null && temperature >= HOT_C -> PlantMood.HOT
-                temperature != null && temperature <= COLD_C -> PlantMood.COLD
-                light in listOf(LightState.LOW, LightState.VERY_LOW) -> PlantMood.LOW_LIGHT
-                humidity != null && humidity < DRY_AIR_PERCENT -> PlantMood.DRY_AIR
-                humidity != null && humidity > HUMID_AIR_PERCENT -> PlantMood.HUMID_AIR
-                temperature == null || humidity == null || packetError -> PlantMood.INCOMPLETE
-                else -> PlantMood.HAPPY
+            val activeMoods = buildList {
+                if (soil == SoilState.DRY) add(PlantMood.THIRSTY)
+                if (temperature != null && temperature >= HOT_C) add(PlantMood.HOT)
+                if (temperature != null && temperature <= COLD_C) add(PlantMood.COLD)
+                if (light in listOf(LightState.LOW, LightState.VERY_LOW)) add(PlantMood.LOW_LIGHT)
+                if (humidity != null && humidity < DRY_AIR_PERCENT) add(PlantMood.DRY_AIR)
+                if (humidity != null && humidity > HUMID_AIR_PERCENT) add(PlantMood.HUMID_AIR)
+                if (temperature == null || humidity == null || packetError) add(PlantMood.INCOMPLETE)
+                if (isEmpty()) add(PlantMood.HAPPY)
             }
-            val (title, summary, tip) = when (mood) {
+            val mood = activeMoods.first()
+            val messages = activeMoods.map(::message)
+            val title = if (activeMoods.size == 1) messages.single().first else {
+                val labels = activeMoods.map(::shortLabel)
+                if (labels.size == 2) "${labels.first()} y ${labels.last().lowercase()}" else labels.joinToString(" · ")
+            }
+            return PlantAssessment(mood, title, messages.joinToString(" ") { it.second },
+                messages.joinToString(" ") { it.third }, observations, activeMoods)
+        }
+
+        private fun shortLabel(mood: PlantMood): String = when (mood) {
+            PlantMood.THIRSTY -> "Sed"
+            PlantMood.HOT -> "Calor"
+            PlantMood.COLD -> "Frío"
+            PlantMood.LOW_LIGHT -> "Poca luz"
+            PlantMood.DRY_AIR -> "Aire seco"
+            PlantMood.HUMID_AIR -> "Humedad alta"
+            PlantMood.INCOMPLETE -> "Datos incompletos"
+            else -> message(mood).first
+        }
+
+        private fun message(mood: PlantMood): Triple<String, String, String> = when (mood) {
                 PlantMood.THIRSTY -> Triple("Tengo sed", "El sensor indica sustrato seco.",
                     "Comprueba el sustrato y las necesidades de tu planta antes de regar.")
                 PlantMood.HOT -> Triple("Tengo calor", "La temperatura está por encima de mi referencia.",
@@ -89,8 +111,6 @@ data class PlantAssessment(
                     "Las mediciones disponibles siguen visibles. Revisa el DHT11 o la conexión.")
                 else -> Triple("Feliz", "Sin alertas en las lecturas actuales.",
                     "Sustrato con humedad y luz disponible. Mi expresión resume sensores, no diagnostica la salud de la planta.")
-            }
-            return PlantAssessment(mood, title, summary, tip, observations)
         }
     }
 }

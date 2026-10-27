@@ -63,8 +63,49 @@ class PlantAssessmentTest {
         val result = assess(sample.copy(soilAdc = 3000, temperatureC = 40f, humidityPercent = 20f, lightAdc = 4095))
         assertEquals(PlantMood.THIRSTY, result.mood)
         assertEquals(4, result.observations.count { it.level == SignalLevel.ATTENTION })
+        assertEquals(listOf(PlantMood.THIRSTY, PlantMood.HOT, PlantMood.LOW_LIGHT, PlantMood.DRY_AIR), result.activeMoods)
+        assertTrue(result.title.contains("Sed"))
+        assertTrue(result.title.contains("Poca luz"))
     }
     @Test fun rejectedPacketCannotProduceHappy() {
         assertEquals(PlantMood.INCOMPLETE, assess(packetError = true).mood)
+    }
+    @Test fun drySoilAndLowLightArePresentedTogether() {
+        val result = assess(sample.copy(soilAdc = 2900, lightAdc = 4095))
+        assertEquals(listOf(PlantMood.THIRSTY, PlantMood.LOW_LIGHT), result.activeMoods)
+        assertEquals("Sed y poca luz", result.title)
+        assertTrue(result.summary.contains("sustrato seco"))
+        assertTrue(result.summary.contains("poca luz"))
+        assertTrue(result.tip.contains("antes de regar"))
+        assertTrue(result.tip.contains("noche"))
+    }
+    @Test fun lowLightAndDryAirAreAlsoCombined() {
+        val result = assess(sample.copy(lightAdc = 4095, humidityPercent = 20f))
+        assertEquals(listOf(PlantMood.LOW_LIGHT, PlantMood.DRY_AIR), result.activeMoods)
+        assertEquals("Poca luz y aire seco", result.title)
+        assertTrue(result.summary.contains("humedad ambiental"))
+    }
+    @Test fun incompleteDhtRemainsPartOfCombinedState() {
+        val result = assess(sample.copy(soilAdc = 2900, lightAdc = 4095, temperatureC = null, humidityPercent = null))
+        assertEquals(listOf(PlantMood.THIRSTY, PlantMood.LOW_LIGHT, PlantMood.INCOMPLETE), result.activeMoods)
+        assertTrue(result.title.contains("Datos incompletos"))
+        assertTrue(result.summary.contains("lecturas ausentes"))
+    }
+    @Test fun recoveryRemovesOnlyTheConditionThatHasCleared() {
+        val combined = sample.copy(soilAdc = 2900, lightAdc = 4095)
+        assertEquals("Sed y poca luz", assess(combined).title)
+        val lit = assess(combined.copy(lightAdc = 1000))
+        assertEquals(listOf(PlantMood.THIRSTY), lit.activeMoods)
+        assertEquals("Tengo sed", lit.title)
+        val watered = assess(combined.copy(soilAdc = 1800))
+        assertEquals(listOf(PlantMood.LOW_LIGHT), watered.activeMoods)
+        assertEquals("Con sueño", watered.title)
+        assertEquals(listOf(PlantMood.HAPPY), assess().activeMoods)
+    }
+    @Test fun oldOrDisconnectedDataCannotKeepCombinedAlerts() {
+        val combined = sample.copy(soilAdc = 2900, lightAdc = 4095)
+        assertEquals(listOf(PlantMood.OFFLINE), assess(combined, connected = false).activeMoods)
+        assertEquals(listOf(PlantMood.STALE), assess(combined, stale = true).activeMoods)
+        assertEquals(listOf(PlantMood.WAITING), assess(data = null).activeMoods)
     }
 }

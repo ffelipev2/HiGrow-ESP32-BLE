@@ -3,6 +3,7 @@ package cl.higrow.monitor.ui
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +24,8 @@ import kotlinx.coroutines.launch
 
 /** Native vector character: no network, bitmap assets or simulated sensor values. */
 @Composable
-fun PlantFace(mood: PlantMood, description: String, modifier: Modifier = Modifier, onGreet: () -> Unit = {}) {
+fun PlantFace(mood: PlantMood, description: String, modifier: Modifier = Modifier,
+    activeMoods: List<PlantMood> = listOf(mood), onGreet: () -> Unit = {}) {
     val motion = rememberInfiniteTransition(label = "Brote vivo")
     val breath = motion.animateFloat(0.985f, 1.015f,
         infiniteRepeatable(tween(2400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "Respirar")
@@ -35,7 +37,9 @@ fun PlantFace(mood: PlantMood, description: String, modifier: Modifier = Modifie
     }), label = "Parpadear")
     val greeting = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    Box(modifier.aspectRatio(1f).clickable(role = Role.Button, onClickLabel = "Saludar a Brote") {
+    val interactions = remember { MutableInteractionSource() }
+    Box(modifier.aspectRatio(1f).clickable(interactionSource = interactions, indication = null,
+        role = Role.Button, onClickLabel = "Saludar a Brote") {
         onGreet()
         scope.launch {
             greeting.snapTo(1f)
@@ -49,22 +53,23 @@ fun PlantFace(mood: PlantMood, description: String, modifier: Modifier = Modifie
             val unit = size.minDimension / 240f
             translate((size.width - unit * 240) / 2, (size.height - unit * 240) / 2) {
                 scale(unit, unit, pivot = Offset.Zero) {
-                    drawPlant(mood, breath.value, sway.value, blink.value, greeting.value)
+                    drawPlant(mood, activeMoods, breath.value, sway.value, blink.value, greeting.value)
                 }
             }
         }
     }
 }
 
-private fun DrawScope.drawPlant(mood: PlantMood, breath: Float, sway: Float, blink: Float, greeting: Float) {
+private fun DrawScope.drawPlant(mood: PlantMood, activeMoods: List<PlantMood>,
+    breath: Float, sway: Float, blink: Float, greeting: Float) {
     val resting = mood in listOf(PlantMood.OFFLINE, PlantMood.STALE, PlantMood.WAITING)
-    val sleepy = resting || mood == PlantMood.LOW_LIGHT
+    val sleepy = resting || PlantMood.LOW_LIGHT in activeMoods
     val green = Color(0xFF8DDB58)
     val ink = Color(0xFF214730)
-    val tint = when (mood) {
-        PlantMood.THIRSTY, PlantMood.HOT, PlantMood.DRY_AIR -> Color(0xFFE5BE6F)
-        PlantMood.COLD -> Color(0xFF94CED6)
-        PlantMood.OFFLINE, PlantMood.STALE -> Color(0xFF9EB6A0)
+    val tint = when {
+        PlantMood.COLD in activeMoods -> Color(0xFF94CED6)
+        PlantMood.THIRSTY in activeMoods || PlantMood.HOT in activeMoods || PlantMood.DRY_AIR in activeMoods -> Color(0xFFE5BE6F)
+        mood in listOf(PlantMood.OFFLINE, PlantMood.STALE) -> Color(0xFF9EB6A0)
         else -> Color(0xFFB8E77B)
     }
     drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.26f), Color.Transparent), Offset(120f, 140f), 114f),
@@ -75,7 +80,7 @@ private fun DrawScope.drawPlant(mood: PlantMood, breath: Float, sway: Float, bli
         drawCircle(Color(0xFF809A50).copy(alpha = 0.6f), 3f, Offset(76f + i * 22f, 209f + (i % 2) * 3))
     }
     translate(top = -greeting * 10f) {
-        val tilt = if (mood == PlantMood.COLD) sway * 0.5f else sway * 0.22f
+        val tilt = if (PlantMood.COLD in activeMoods) sway * 0.5f else sway * 0.22f
         rotate(tilt, Offset(120f, 175f)) {
             scale(breath, breath, Offset(120f, 192f)) {
                 drawOval(green.copy(alpha = if (resting) 0.5f else 1f), Offset(76f, 192f), Size(36f, 18f))
@@ -136,14 +141,14 @@ private fun DrawScope.drawPlant(mood: PlantMood, breath: Float, sway: Float, bli
                     else -> drawArc(ink.copy(alpha = 0.8f), 10f, 160f, false, Offset(112f, 159f), Size(16f, 9f),
                         style = Stroke(3f, cap = StrokeCap.Round))
                 }
-                if (mood == PlantMood.HOT || mood == PlantMood.THIRSTY) {
+                if (PlantMood.HOT in activeMoods || PlantMood.THIRSTY in activeMoods) {
                     val drop = Path().apply {
                         moveTo(164f, 116f); cubicTo(149f, 132f, 159f, 140f, 166f, 135f)
                         cubicTo(173f, 131f, 167f, 123f, 164f, 116f); close()
                     }
                     drawPath(drop, Color(0xFF7ED7EA))
                 }
-                if (resting || mood == PlantMood.LOW_LIGHT) {
+                if (resting || PlantMood.LOW_LIGHT in activeMoods) {
                     drawCircle(Color(0xFFE1F6BE).copy(alpha = 0.75f), 4f, Offset(191f, 84f))
                     drawCircle(Color(0xFFE1F6BE).copy(alpha = 0.45f), 2.5f, Offset(205f, 65f))
                 } else {

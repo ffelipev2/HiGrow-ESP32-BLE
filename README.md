@@ -2,9 +2,11 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
-## Brote, tu compañero de planta · versión 1.3.0
+## Brote, tu compañero de planta · versión 1.3.1
 
 Inicio incorpora una carita de planta dibujada con Canvas nativo: respira, parpadea, mueve las hojas y saluda al tocarla. Su expresión cambia con el sustrato, la luz, la temperatura y la humedad ambiental recibidos por BLE. **Ver condiciones** explica las lecturas y las reglas que originan ese estado. Los paneles usan bordes suaves y degradados en colores de cada sensor, con una paleta verde más profunda en modo oscuro.
+
+Las condiciones se combinan: por ejemplo, **Sed y poca luz** muestra ambas en el título, el mensaje y los rasgos de la carita. También se combinan poca luz con aire seco, temperatura y lecturas incompletas. Al tocar a Brote conserva su saludo animado y ya no aparece el recuadro de pulsación.
 
 Sin conexión, Brote descansa; al conectar espera las primeras muestras. Con datos antiguos o incompletos indica el problema. No muestra «Feliz» con datos ausentes. La luz y el sustrato conservan sus valores **ADC reales**, sin inventar lux ni porcentajes. La temperatura y la humedad usan referencias generales explicadas en el panel, no un perfil de especie.
 
@@ -104,7 +106,7 @@ Reemplaza COM5 por el puerto correcto. La carga se realiza de forma explícita; 
 - [Pruebas en nRF Connect y lista de comprobación física](docs/TESTING.md)
 - [DHT11: alimentación, biblioteca y prueba sin BLE](docs/DHT_TROUBLESHOOTING.md)
 - [Estado de las compilaciones en este equipo](docs/VALIDATION.md)
-- Pruebas Android: `BlePacketParserTest.kt`, `MeasurementStatsTest.kt` y `PlantAssessmentTest.kt`, en `app/src/test/java/cl/higrow/monitor/data/`. Última validación: **26 pruebas correctas**, APK compilado y Lint con **0 errores**; detalles y límites en [VALIDATION.md](docs/VALIDATION.md).
+- Pruebas Android: `BlePacketParserTest.kt`, `MeasurementStatsTest.kt` y `PlantAssessmentTest.kt`, en `app/src/test/java/cl/higrow/monitor/data/`. Última validación: **31 pruebas correctas**, APK compilado y Lint con **0 errores**; detalles y límites en [VALIDATION.md](docs/VALIDATION.md).
 - Prueba nativa del codificador/umbrales firmware: `tests/firmware_protocol_test.cpp`; en un equipo con C++: `g++ -std=c++11 tests/firmware_protocol_test.cpp -o protocol-test` y ejecutar el binario.
 
 En Windows también puede ejecutarse desde **Developer PowerShell for Visual Studio**: `cl /EHsc tests/firmware_protocol_test.cpp /Fe:protocol-test.exe`, seguido de `.\protocol-test.exe`.

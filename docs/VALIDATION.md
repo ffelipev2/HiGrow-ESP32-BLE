@@ -1,5 +1,14 @@
 # Registro de validación local
 
+## Pulsación y condiciones combinadas 1.3.1 — 27 de octubre de 2026
+
+- Se desactivó la indicación rectangular de pulsación del botón de Brote; se conservan el salto/saludo, el rol de botón y la descripción accesible.
+- La evaluación conserva todas las condiciones activas. El título, el resumen y el consejo muestran sus combinaciones. La cara recibe el conjunto completo para aplicar ojos de poca luz junto al gesto de sed y otros rasgos simultáneos.
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**, **31 pruebas correctas**, Lint con **0 errores y 10 advertencias**.
+- Las cinco pruebas añadidas cubren sed con poca luz, aire seco con poca luz, DHT incompleto junto a otras alertas, recuperación parcial y eliminación de alertas antiguas al desconectar.
+- APK **1.3.1**, código **6**, generado en `app/build/outputs/apk/debug/app-debug.apk`. Se añadieron escenarios combinados al grupo de vistas previas de Brote.
+- ADB no mostró dispositivos conectados. La pulsación y el aspecto de las expresiones combinadas no se comprobaron en un dispositivo en esta sesión.
+
 ## Brote e interfaz 1.3.0 — 27 de octubre de 2026
 
 - `gradlew.bat testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**.

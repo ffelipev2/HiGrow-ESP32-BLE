@@ -36,7 +36,7 @@ fun PlantSignal.metric(): SensorMetric = when (this) {
 fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, compact: Boolean = false) {
     val assessment = state.plantAssessment()
     var details by rememberSaveable { mutableStateOf(false) }
-    var greetings by rememberSaveable(assessment.mood) { mutableIntStateOf(0) }
+    var greetings by rememberSaveable(assessment.activeMoods) { mutableIntStateOf(0) }
     val accent = when (assessment.mood) {
         PlantMood.THIRSTY, PlantMood.HOT, PlantMood.DRY_AIR -> Color(0xFFFFDB8B)
         PlantMood.COLD, PlantMood.INCOMPLETE, PlantMood.STALE -> Color(0xFFACDCE9)
@@ -59,14 +59,16 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
                     Text("Estado de tu planta", style = MaterialTheme.typography.titleSmall)
                 }
                 if (stacked) {
-                    PlantFace(assessment.mood, assessment.title, Modifier.size(144.dp).align(Alignment.CenterHorizontally)) { greetings++ }
+                    PlantFace(assessment.mood, assessment.title, Modifier.size(144.dp).align(Alignment.CenterHorizontally),
+                        activeMoods = assessment.activeMoods) { greetings++ }
                     CompanionCopy(assessment, copy, accent, onDetails = { details = true })
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Column(Modifier.weight(1f)) {
                             CompanionCopy(assessment, copy, accent, onDetails = { details = true })
                         }
-                        PlantFace(assessment.mood, assessment.title, Modifier.size(if (compact) 104.dp else 136.dp)) { greetings++ }
+                        PlantFace(assessment.mood, assessment.title, Modifier.size(if (compact) 104.dp else 136.dp),
+                            activeMoods = assessment.activeMoods) { greetings++ }
                     }
                 }
             }

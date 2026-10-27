@@ -1,8 +1,10 @@
-# Paneles nativos — HiGrow Monitor 1.3.0
+# Paneles nativos — HiGrow Monitor 1.3.1
 
 La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y reduce las columnas según el ancho disponible y el tamaño de texto.
 
 La versión 1.3.0 añade **Brote**, una carita animada con expresiones ligadas a las lecturas. Incluye saludo al tocarla y explicación de condiciones; usa degradados suaves, bordes coloreados y una paleta verde más profunda en modo oscuro. En tablet se sitúa sobre los controles de la columna lateral; en teléfono encabeza Inicio. Ver [comportamiento y criterios de Brote](BROTE.md). Las capturas que siguen documentan las versiones anteriores indicadas en el README.
+
+La corrección 1.3.1 elimina el recuadro de pulsación de la carita y combina las condiciones simultáneas en título, resumen, consejo y rasgos del personaje; por ejemplo, sustrato seco con poca luz. El saludo y la accesibilidad del botón se mantienen.
 
 Las [capturas del README](../README.md#paneles-de-la-app--versión-110) muestran los seis paneles ejecutándose en un Xiaomi 25069PTEBG con datos reales recibidos del HiGrow por BLE, en modo oscuro. Los PNG originales están en [screenshots](screenshots/).
 
@@ -46,7 +48,7 @@ El historial se conserva en memoria durante la conexión y se vacía al desconec
 
 - Compilar: `gradlew.bat testDebugUnitTest assembleDebug lintDebug`.
 - APK: `app/build/outputs/apk/debug/app-debug.apk`.
-- Versión: 1.3.0, código 5; puede actualizar la instalación debug anterior si conserva la misma firma.
+- Versión: 1.3.1, código 6; puede actualizar la instalación debug anterior si conserva la misma firma.
 - Vistas del editor: abrir `app/src/debug/java/cl/higrow/monitor/ui/DesignPreviews.kt` en Android Studio y elegir Design/Split. Incluye inicio vacío/conectado, gráficos, detalle, ajustes, historial, modo oscuro y fuente grande a 320 dp.
 - El grupo **Tablet** añade vistas horizontales 1333 × 800 dp, verticales 800 × 1333 dp, una ventana de 600 dp y texto a escala 1.5. También hay una vista de teléfono horizontal de 850 × 393 dp.
 

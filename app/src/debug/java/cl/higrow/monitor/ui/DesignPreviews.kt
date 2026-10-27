@@ -92,21 +92,23 @@ private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: Sensor
 @Preview(name = "21 Tablet · Inicio texto grande", group = "Tablet", widthDp = 1333, heightDp = 800, fontScale = 1.5f)
 @Composable fun TabletDashboardLargeFontPreview() { PanelPreview() }
 
-private fun previewForMood(mood: PlantMood): MonitorUiState {
+private fun previewForMood(mood: PlantMood, extraMood: PlantMood? = null): MonitorUiState {
     if (mood == PlantMood.OFFLINE) return MonitorUiState()
     val state = previewState(true)
     if (mood == PlantMood.WAITING) return state.copy(readings = SensorReadings())
     if (mood == PlantMood.STALE) return state.copy(stale = true, ageSeconds = 12)
-    val history = state.readings.history.map { data -> when (mood) {
-        PlantMood.THIRSTY -> data.copy(soilAdc = 2900, soilState = SoilState.DRY)
-        PlantMood.HOT -> data.copy(temperatureC = 36f)
-        PlantMood.COLD -> data.copy(temperatureC = 10f)
-        PlantMood.LOW_LIGHT -> data.copy(lightAdc = 4095)
-        PlantMood.DRY_AIR -> data.copy(humidityPercent = 20f)
-        PlantMood.HUMID_AIR -> data.copy(humidityPercent = 90f)
-        PlantMood.INCOMPLETE -> data.copy(temperatureC = null, humidityPercent = null)
-        else -> data
-    } }
+    val history = state.readings.history.map { original ->
+        listOfNotNull(mood, extraMood).fold(original) { data, condition -> when (condition) {
+            PlantMood.THIRSTY -> data.copy(soilAdc = 2900, soilState = SoilState.DRY)
+            PlantMood.HOT -> data.copy(temperatureC = 36f)
+            PlantMood.COLD -> data.copy(temperatureC = 10f)
+            PlantMood.LOW_LIGHT -> data.copy(lightAdc = 4095)
+            PlantMood.DRY_AIR -> data.copy(humidityPercent = 20f)
+            PlantMood.HUMID_AIR -> data.copy(humidityPercent = 90f)
+            PlantMood.INCOMPLETE -> data.copy(temperatureC = null, humidityPercent = null)
+            else -> data
+        } }
+    }
     return state.copy(readings = SensorReadings(history.last(), history))
 }
 
@@ -116,6 +118,9 @@ private fun previewForMood(mood: PlantMood): MonitorUiState {
 @Composable fun BroteOfflinePreview() { PanelPreview(connected = false) }
 @Preview(name = "24 Brote · Texto grande", group = "Brote", widthDp = 320, heightDp = 720, fontScale = 1.5f)
 @Composable fun BroteLargeTextPreview() { PanelPreview() }
+
+@Preview(name = "27 Brote · Sed y poca luz", group = "Brote", widthDp = 393, heightDp = 850)
+@Composable fun BroteCombinedPreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY, PlantMood.LOW_LIGHT)) }
 
 @Preview(name = "25 Brote · Expresiones", group = "Brote", widthDp = 393, heightDp = 700)
 @Composable fun BroteExpressionsPreview() {
@@ -142,6 +147,7 @@ private fun previewForMood(mood: PlantMood): MonitorUiState {
 @Preview(name = "26 Brote · Interacción", group = "Brote", widthDp = 393, heightDp = 850)
 @Composable fun BroteInteractivePreview() {
     var mood by remember { mutableStateOf(PlantMood.HAPPY) }
+    var extraMood by remember { mutableStateOf<PlantMood?>(null) }
     HiGrowTheme {
         Column {
             Text("VISTA PREVIA · DATOS DE DISEÑO", color = Color.White,
@@ -149,10 +155,15 @@ private fun previewForMood(mood: PlantMood): MonitorUiState {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf(PlantMood.HAPPY, PlantMood.THIRSTY, PlantMood.LOW_LIGHT, PlantMood.HOT,
                     PlantMood.INCOMPLETE, PlantMood.OFFLINE).forEach { choice ->
-                    FilterChip(mood == choice, { mood = choice }, label = { Text(previewForMood(choice).plantAssessment().title) })
+                    FilterChip(mood == choice && extraMood == null, { mood = choice; extraMood = null },
+                        label = { Text(previewForMood(choice).plantAssessment().title) })
                 }
+                FilterChip(mood == PlantMood.THIRSTY && extraMood == PlantMood.LOW_LIGHT,
+                    { mood = PlantMood.THIRSTY; extraMood = PlantMood.LOW_LIGHT }, label = { Text("Sed y poca luz") })
+                FilterChip(mood == PlantMood.LOW_LIGHT && extraMood == PlantMood.DRY_AIR,
+                    { mood = PlantMood.LOW_LIGHT; extraMood = PlantMood.DRY_AIR }, label = { Text("Poca luz y aire seco") })
             }
-            Box(Modifier.weight(1f)) { HiGrowApp(previewForMood(mood), {}, {}, {}, {}, {}, {}) }
+            Box(Modifier.weight(1f)) { HiGrowApp(previewForMood(mood, extraMood), {}, {}, {}, {}, {}, {}) }
         }
     }
 }
