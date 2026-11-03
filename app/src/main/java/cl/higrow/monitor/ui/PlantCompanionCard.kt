@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Eco
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,8 +34,8 @@ fun PlantSignal.metric(): SensorMetric = when (this) {
 }
 
 @Composable
-fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, compact: Boolean = false,
-    dense: Boolean = false) {
+fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier,
+    dense: Boolean = false, showcase: Boolean = false) {
     val assessment = state.plantAssessment()
     var details by rememberSaveable { mutableStateOf(false) }
     var greetings by rememberSaveable(assessment.activeMoods) { mutableIntStateOf(0) }
@@ -52,9 +53,26 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
         color = Color(0xFF143F2E), contentColor = Color.White,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5FAD78).copy(alpha = 0.35f))) {
         BoxWithConstraints(Modifier.background(Brush.linearGradient(
-            listOf(Color(0xFF173F30), Color(0xFF102A21), Color(0xFF214F32)))).padding(if (dense) 12.dp else 18.dp)) {
-            val stacked = maxWidth < (if (compact) 228.dp else 292.dp) || LocalDensity.current.fontScale > 1.3f
-            if (dense) {
+            listOf(Color(0xFF174B32), Color(0xFF092D22), Color(0xFF214F32)))).padding(if (dense) 12.dp else 18.dp),
+            contentAlignment = if (showcase) Alignment.Center else Alignment.TopStart) {
+            val stacked = maxWidth < 292.dp || LocalDensity.current.fontScale > 1.3f
+            if (showcase) {
+                BotanicalLeaves(Modifier.matchParentSize(), subtle = true)
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Outlined.Eco, null, tint = accent, modifier = Modifier.size(22.dp))
+                        Text("Estado de tu planta", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                        Icon(Icons.Outlined.Info, null, tint = Color(0xFFD2E3D4), modifier = Modifier.size(18.dp))
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Column(Modifier.weight(1f)) {
+                            CompanionCopy(assessment, copy, accent, onDetails = { details = true }, showcase = true)
+                        }
+                        PlantFace(assessment.mood, assessment.title, Modifier.size(124.dp),
+                            activeMoods = assessment.activeMoods) { greetings++ }
+                    }
+                }
+            } else if (dense) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(when (greetings % 3) {
@@ -82,7 +100,7 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
                             Column(Modifier.weight(1f)) {
                                 CompanionCopy(assessment, copy, accent, onDetails = { details = true })
                             }
-                            PlantFace(assessment.mood, assessment.title, Modifier.size(if (compact) 104.dp else 136.dp),
+                            PlantFace(assessment.mood, assessment.title, Modifier.size(136.dp),
                                 activeMoods = assessment.activeMoods) { greetings++ }
                         }
                     }
@@ -95,17 +113,23 @@ fun PlantCompanionCard(state: MonitorUiState, modifier: Modifier = Modifier, com
 
 @Composable
 private fun CompanionCopy(assessment: PlantAssessment, copy: String, accent: Color, onDetails: () -> Unit,
-    dense: Boolean = false) {
+    dense: Boolean = false, showcase: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(if (dense) 4.dp else 8.dp)) {
-        Text(assessment.title, style = if (dense) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
+        Text(assessment.title, style = if (dense) MaterialTheme.typography.titleLarge
+            else if (showcase) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold, color = accent)
         if (!dense) Text(copy, style = MaterialTheme.typography.bodySmall, color = Color(0xFFD2E3D4))
-        TextButton(onClick = onDetails, contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.textButtonColors(contentColor = accent)) {
+        val buttonContent: @Composable RowScope.() -> Unit = {
             Text("Ver condiciones", style = MaterialTheme.typography.labelMedium)
             Spacer(Modifier.width(6.dp))
             Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(16.dp))
         }
+        if (showcase) OutlinedButton(onClick = onDetails, shape = RoundedCornerShape(50),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.7f)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = accent), content = buttonContent)
+        else TextButton(onClick = onDetails, contentPadding = PaddingValues(0.dp),
+            colors = ButtonDefaults.textButtonColors(contentColor = accent), content = buttonContent)
     }
 }
 

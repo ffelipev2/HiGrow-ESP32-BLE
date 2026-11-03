@@ -92,6 +92,16 @@ private fun PanelPreview(connected: Boolean = true, tab: Int = 0, detail: Sensor
 @Preview(name = "21 Tablet · Inicio texto grande", group = "Tablet", widthDp = 1333, heightDp = 800, fontScale = 1.5f)
 @Composable fun TabletDashboardLargeFontPreview() { PanelPreview() }
 
+@Preview(name = "33 Tablet referencia · 1067 × 600", group = "Tablet referencia", widthDp = 1067, heightDp = 600)
+@Composable fun TabletReferenceEmptyPreview() { PanelPreview(connected = false) }
+@Preview(name = "34 Tablet referencia · Conectada", group = "Tablet referencia", widthDp = 1067, heightDp = 600)
+@Composable fun TabletReferenceConnectedPreview() { PanelPreview() }
+@Preview(name = "35 Tablet referencia · Oscuro", group = "Tablet referencia", widthDp = 1333, heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable fun TabletReferenceDarkPreview() { PanelPreview() }
+@Preview(name = "36 Tablet referencia · Condiciones combinadas", group = "Tablet referencia", widthDp = 1333, heightDp = 800)
+@Composable fun TabletReferenceCombinedPreview() { PanelPreview(sampleState = previewForMood(PlantMood.THIRSTY, PlantMood.LOW_LIGHT)) }
+
 private fun previewForMood(mood: PlantMood, extraMood: PlantMood? = null): MonitorUiState {
     if (mood == PlantMood.OFFLINE) return MonitorUiState()
     val state = previewState(true)

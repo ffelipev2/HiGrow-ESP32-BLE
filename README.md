@@ -2,6 +2,18 @@
 
 Monitor local para **HiGrow ESP32 + Android 8.0 o posterior**, sin WiFi, Internet ni nube en funcionamiento. Firmware Arduino y cliente Android nativo Kotlin/Compose/Material 3. Esta carpeta es el proyecto que se abre en Android Studio.
 
+## Diseño de tablet · versión 1.4.0
+
+La nueva referencia se adapta con una cabecera amplia verde bosque, hojas vectoriales, marca de mayor tamaño y navegación lateral con botones completos. En horizontal, Brote y la conexión ocupan la columna izquierda y las cuatro mediciones forman una cuadrícula 2 × 2 a la derecha. Las tarjetas tienen cifras grandes, iconos por sensor y fondos pastel que también se adaptan al modo oscuro.
+
+Los controles se miden antes de asignar a Brote el alto restante. En ventanas bajas la conexión se resume en una franja con acceso al panel BLE. Las tarjetas vacías llevan ondas decorativas y una etiqueta **Sin datos para graficar**. Al recibir muestras aparecen las minigráficas de esas lecturas. En teléfono se mantiene el resumen compacto de la versión 1.3.2.
+
+Capturas de la versión 1.4.0 ejecutada en un entorno Android de **1600 × 900 px, 240 dpi**. Las vistas están identificadas como **VISTA PREVIA · DATOS DE DISEÑO** y contienen muestras del editor.
+
+| Sin conexión | Con muestras de diseño |
+| --- | --- |
+| <a href="docs/screenshots/tablet-reference-empty.png"><img src="docs/screenshots/tablet-reference-empty.png" alt="Inicio 1.4.0 en tablet, Brote en descanso, conexión BLE y cuatro tarjetas sin lecturas" width="500"></a> | <a href="docs/screenshots/tablet-reference-connected.png"><img src="docs/screenshots/tablet-reference-connected.png" alt="Inicio 1.4.0 en tablet con cuatro mediciones y minigráficas, muestras de diseño identificadas" width="500"></a> |
+
 ## Brote, tu compañero de planta · versión 1.3.2
 
 Inicio incorpora una carita de planta dibujada con Canvas nativo: respira, parpadea, mueve las hojas y saluda al tocarla. Su expresión cambia con el sustrato, la luz, la temperatura y la humedad ambiental recibidos por BLE. **Ver condiciones** explica las lecturas y las reglas que originan ese estado. Los paneles usan bordes suaves y degradados en colores de cada sensor, con una paleta verde más profunda en modo oscuro.

@@ -2,6 +2,7 @@ package cl.higrow.monitor.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,10 +17,16 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cl.higrow.monitor.MonitorUiState
 import cl.higrow.monitor.ble.ConnectionStatus
 import cl.higrow.monitor.data.LightThresholds
@@ -45,9 +52,13 @@ fun HiGrowApp(state: MonitorUiState, onScan: () -> Unit, onStopScan: () -> Unit,
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val useRail = maxWidth >= 600.dp
+        val tabletHeader = maxWidth >= 900.dp && maxHeight >= 500.dp && LocalDensity.current.fontScale <= 1.3f
         Scaffold(containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                TopAppBar(title = { Text(if (detail != null) "Detalle del sensor" else if (selected == 0) "HiGrow Monitor" else tabs[selected],
+                val title = if (detail != null) "Detalle del sensor" else if (selected == 0) "HiGrow Monitor" else tabs[selected]
+                if (tabletHeader) TabletHeader(title, selected == 0 && detail == null,
+                    onHome = { detail = null; selected = 0 }, onSettings = { detail = null; selected = 3 })
+                else TopAppBar(title = { Text(title,
                     maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     navigationIcon = {
                         if (detail != null || selected != 0) IconButton(onClick = { detail = null; selected = 0 }) {
@@ -78,24 +89,12 @@ fun HiGrowApp(state: MonitorUiState, onScan: () -> Unit, onStopScan: () -> Unit,
             }) { padding ->
                 Row(Modifier.fillMaxSize().padding(padding)) {
                     if (useRail) {
-                        NavigationRail(Modifier.fillMaxHeight().verticalScroll(rememberScrollState()),
-                            containerColor = MaterialTheme.colorScheme.surface) {
-                            tabs.forEachIndexed { index, title ->
-                                NavigationRailItem(selected = selected == index, onClick = { detail = null; selected = index },
-                                    icon = { Icon(icons[index], null) },
-                                    label = { Text(title, style = MaterialTheme.typography.labelSmall) },
-                                    colors = NavigationRailItemDefaults.colors(
-                                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        selectedTextColor = MaterialTheme.colorScheme.onSurface),
-                                    modifier = Modifier.padding(vertical = 4.dp))
-                            }
-                        }
+                        TabletNavigation(tabs, icons, selected) { detail = null; selected = it }
                     }
                     Surface(Modifier.weight(1f).fillMaxHeight(), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                         color = MaterialTheme.colorScheme.surface) {
                         BoxWithConstraints(Modifier.fillMaxSize()
-                            .padding(horizontal = if (useRail) 24.dp else 14.dp, vertical = 14.dp)) {
+                            .padding(horizontal = if (useRail) 16.dp else 14.dp, vertical = 14.dp)) {
                             CompositionLocalProvider(LocalScreenViewport provides ScreenViewport(maxWidth, maxHeight)) {
                                 key(selected, detail) {
                                     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
@@ -127,6 +126,55 @@ fun HiGrowApp(state: MonitorUiState, onScan: () -> Unit, onStopScan: () -> Unit,
     }
     if (editThresholds) ThresholdDialog(state.lightThresholds, { editThresholds = false }) {
         onThresholds(it); editThresholds = false
+    }
+}
+
+@Composable
+private fun TabletHeader(title: String, home: Boolean, onHome: () -> Unit, onSettings: () -> Unit) {
+    Surface(color = ForestGreen, contentColor = Color.White) {
+        Box {
+            BotanicalLeaves(Modifier.matchParentSize())
+            Row(Modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 96.dp)
+                .padding(horizontal = 28.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                if (home) LeafMark(52) else IconButton(onHome) {
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver al inicio")
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(title, style = MaterialTheme.typography.headlineMedium, fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(if (home) "Monitoreo de tus plantas" else "HiGrow Monitor · Bluetooth local",
+                        style = MaterialTheme.typography.bodyMedium, color = Color(0xFFD8E8D5))
+                }
+                Surface(onClick = onSettings, color = Color.White.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(18.dp)) {
+                    Icon(Icons.Outlined.Settings, "Abrir ajustes", Modifier.padding(14.dp).size(26.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TabletNavigation(tabs: List<String>, icons: List<ImageVector>, selected: Int, onSelected: (Int) -> Unit) {
+    val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
+    Box(Modifier.width((104 * fontScale).dp).fillMaxHeight().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+        .background(MaterialTheme.colorScheme.surface)) {
+        BotanicalLeaves(Modifier.align(Alignment.BottomCenter).width(180.dp).height(160.dp), subtle = true)
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            tabs.forEachIndexed { index, title ->
+                val active = selected == index
+                Column(Modifier.width((84 * fontScale).dp).heightIn(min = (82 * fontScale).dp).clip(RoundedCornerShape(20.dp))
+                    .background(if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                    .selectable(active, role = Role.Tab, onClick = { onSelected(index) }).padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(7.dp, Alignment.CenterVertically)) {
+                    val ink = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icon(icons[index], null, Modifier.size(28.dp), tint = ink)
+                    Text(title, style = MaterialTheme.typography.labelMedium, color = ink)
+                }
+            }
+        }
     }
 }
 

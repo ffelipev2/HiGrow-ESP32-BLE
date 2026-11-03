@@ -1,10 +1,22 @@
-# Paneles nativos — HiGrow Monitor 1.3.2
+# Paneles nativos — HiGrow Monitor 1.4.0
 
 La interfaz sigue la referencia visual suministrada por el usuario: cabecera verde bosque, marca de hoja, superficie blanca con esquinas superiores redondeadas, tarjetas suaves en rojo/azul/verde/amarillo y navegación con indicador verde claro. El diseño también adapta colores al modo oscuro y reduce las columnas según el ancho disponible y el tamaño de texto.
 
 La versión 1.3.0 añade **Brote**, una carita animada con expresiones ligadas a las lecturas. Incluye saludo al tocarla y explicación de condiciones; usa degradados suaves, bordes coloreados y una paleta verde más profunda en modo oscuro. En tablet se sitúa sobre los controles de la columna lateral; en teléfono encabeza Inicio. Ver [comportamiento y criterios de Brote](BROTE.md). Las capturas que siguen documentan las versiones anteriores indicadas en el README.
 
 La corrección 1.3.1 elimina el recuadro de pulsación de la carita y combina las condiciones simultáneas en título, resumen, consejo y rasgos del personaje; por ejemplo, sustrato seco con poca luz. El saludo y la accesibilidad del botón se mantienen.
+
+## Referencia de tablet (1.4.0)
+
+- Cabecera amplia desde 900 dp de ancho de ventana y 500 dp de alto, con fuente hasta 130 %. Marca de 52 dp, subtítulo y hojas vectoriales. En ventanas menores se utiliza la cabecera compacta.
+- Navegación lateral de 104 dp que crece con la escala de fuente, con selección que agrupa icono y texto. Los botones tienen semántica de pestaña y el menú admite desplazamiento con texto grande.
+- Inicio lateral desde 860 dp legibles y 380 dp de alto útil escalados por la fuente. La columna izquierda recibe el 38 % del ancho, entre 320 y 440 dp escalados por la fuente. Los sensores reciben el resto y se distribuyen en dos filas de igual altura, con separaciones de 16 dp.
+- `TabletDashboard` mide los controles mediante `SubcomposeLayout` y asigna a Brote el alto restante. En ventanas bajas utiliza la franja BLE con botón de conexión. Los avisos o textos que superan el mínimo legible pueden hacer desplazable la columna izquierda.
+- Brote presenta su expresión combinada, resumen y botón **Ver condiciones** sobre un fondo botánico tenue. Conserva el saludo sin recuadro al tocarlo.
+- Tarjetas amplias con cifras de 40 sp, acceso al detalle y minigráficas. Las tarjetas sin datos muestran ondas decorativas en la mitad inferior y una etiqueta explícita. Las ondas desaparecen cuando hay muestras válidas para graficar ese sensor.
+- Paletas clara y oscura, valores ADC y vista compacta de teléfono conservan sus criterios. Las hojas y los fondos se dibujan con Canvas nativo.
+
+Las capturas de esta versión aparecen en el [README](../README.md#diseño-de-tablet--versión-140) con la identificación de datos de diseño. El grupo **Tablet referencia** añade vistas a 1067 × 600 dp y 1333 × 800 dp, estados combinados y modo oscuro.
 
 ## Inicio compacto en teléfono (1.3.2)
 
@@ -60,7 +72,7 @@ El historial se conserva en memoria durante la conexión y se vacía al desconec
 
 - Compilar: `gradlew.bat testDebugUnitTest assembleDebug lintDebug`.
 - APK: `app/build/outputs/apk/debug/app-debug.apk`.
-- Versión: 1.3.2, código 7; puede actualizar la instalación debug anterior si conserva la misma firma.
+- Versión: 1.4.0, código 8; puede actualizar la instalación debug anterior si conserva la misma firma.
 - Vistas del editor: abrir `app/src/debug/java/cl/higrow/monitor/ui/DesignPreviews.kt` en Android Studio y elegir Design/Split. Incluye inicio vacío/conectado, gráficos, detalle, ajustes, historial, modo oscuro y fuente grande a 320 dp.
 - El grupo **Tablet** añade vistas horizontales 1333 × 800 dp, verticales 800 × 1333 dp, una ventana de 600 dp y texto a escala 1.5. También hay una vista de teléfono horizontal de 850 × 393 dp.
 

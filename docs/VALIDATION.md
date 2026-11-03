@@ -1,5 +1,18 @@
 # Registro de validación local
 
+## Referencia de tablet 1.4.0 — 3 de noviembre de 2026
+
+- Cabecera botánica amplia, navegación lateral con selección completa, Brote y conexión a la izquierda y sensores en 2 × 2. Las ventanas bajas resumen los controles BLE. Las tarjetas vacías tienen ilustración vectorial y estado explícito; con muestras válidas aparecen las minigráficas.
+- `gradlew.bat testDebugUnitTest assembleDebug lintDebug` completado correctamente. **31 pruebas, 0 fallos y 0 errores**. Lint con **0 errores y 10 advertencias** de configuración y dependencias existentes.
+- APK debug **1.4.0, código 8** instalado en el entorno Android disponible por ADB, identificado como `emulator-5554`, API 28. Tamaño original de **1600 × 900 px** y densidad **240 dpi**, equivalente a unos **1067 × 600 dp**.
+- Vistas de Inicio vacío y conectado inspeccionadas visualmente a ese tamaño. Brote, conexión, acceso BLE y las cuatro mediciones quedan completos en pantalla. Capturas incluidas en el README con la etiqueta **VISTA PREVIA · DATOS DE DISEÑO**.
+- Revisión adicional a **2000 × 1200 px**, con modo oscuro y condiciones **Sed y poca luz**. Se ven el estado combinado, la expresión correspondiente, las cuatro cifras y las minigráficas.
+- La revisión de fuente al **150 %** detectó nombres partidos en la barra lateral. Se corrigió haciendo crecer el ancho y los botones con la escala de fuente. Con esa escala Inicio admite desplazamiento y conserva sus controles.
+- Revisión de teléfono a **590 × 1275 px** y 240 dpi. El resumen compacto, las cuatro tarjetas y la navegación inferior quedan visibles.
+- Se abrió `MainActivity` y se comprobó la navegación lateral hacia Gráficos y Ajustes. Inicio vacío también reúne los paneles completos en la actividad normal, con la cabecera integrada en la barra de estado.
+- Al terminar se restauraron **1600 × 900 px**, **240 dpi**, fuente efectiva **1.0** y modo nocturno desactivado. Se dejó la app normal en Inicio.
+- Las pruebas con datos usan muestras exclusivas del editor. Esta revisión valida presentación e instalación en el entorno Android disponible. El enlace con el HiGrow físico queda pendiente de comprobar en la tablet del usuario.
+
 ## Inicio compacto 1.3.2 — 27 de octubre de 2026
 
 - Se incorporó una vista de conjunto de teléfono con Brote reducido, franja BLE y cuatro mediciones en 2 × 2. La altura de los sensores se calcula después de medir la cabecera real; se conserva desplazamiento cuando no cabe el mínimo legible.

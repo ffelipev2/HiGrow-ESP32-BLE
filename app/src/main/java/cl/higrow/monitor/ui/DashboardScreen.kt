@@ -30,31 +30,9 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
         DashboardOverview(state, onConnection, onSensor)
         return
     }
-    val wide = viewport.width.value / fontScale >= 900f && viewport.height >= 480.dp
+    val wide = viewport.width.value / fontScale >= 860f && viewport.height >= (380 * fontScale).dp
     if (wide) {
-        // Measure against the viewport before the page scrolls, so the sensor area
-        // uses both dimensions instead of leaving an empty region below one row.
-        val height = (viewport.height - 12.dp).coerceAtLeast((440 * fontScale).dp + 12.dp)
-        Row(Modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-            Column(Modifier.width((300 * fontScale).dp).fillMaxHeight().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                PlantCompanionCard(state, compact = true)
-                ConnectionPanel(state, onConnection, stackActions = true)
-                DashboardAlerts(state)
-                DeviceBar(state, onConnection)
-                ConnectionFooter(state, onDisconnect)
-            }
-            Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SensorMetric.entries.chunked(2).forEach { row ->
-                    Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        row.forEach { metric ->
-                            SensorCard(metric, state.readings.latest, state.readings.history, state.lightThresholds,
-                                { onSensor(metric) }, Modifier.weight(1f).fillMaxHeight(), expanded = true)
-                        }
-                    }
-                }
-            }
-        }
+        TabletDashboard(state, onConnection, onSensor, onDisconnect)
         return
     }
     val expandedCards = viewport.width >= 600.dp
@@ -75,6 +53,58 @@ fun DashboardScreen(state: MonitorUiState, onConnection: () -> Unit, onSensor: (
         ResponsiveRows(cards, minCellWidth = 240, compactPairs = true)
         DeviceBar(state, onConnection)
         ConnectionFooter(state, onDisconnect)
+    }
+}
+
+private enum class TabletSlot { CONTROLS, COMPANION }
+
+@Composable
+private fun TabletDashboard(state: MonitorUiState, onConnection: () -> Unit,
+    onSensor: (SensorMetric) -> Unit, onDisconnect: () -> Unit) {
+    val viewport = LocalScreenViewport.current
+    val fontScale = LocalDensity.current.fontScale.coerceAtLeast(1f)
+    val height = viewport.height - 12.dp
+    val sidebarWidth = (viewport.width * 0.38f).coerceIn((320 * fontScale).dp, (440 * fontScale).dp)
+    val shortWindow = height < (540 * fontScale).dp
+    Row(Modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Box(Modifier.width(sidebarWidth).fillMaxHeight().verticalScroll(rememberScrollState())) {
+            // Measure controls before giving Brote the remaining height. Long device
+            // names and warnings can grow without hiding actions or sensor values.
+            SubcomposeLayout(Modifier.fillMaxWidth()) { constraints ->
+                val measureConstraints = constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity)
+                val gap = 12.dp.roundToPx()
+                val controls = subcompose(TabletSlot.CONTROLS) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (shortWindow) ConnectionStrip(state, onConnection, emphasizeAction = true)
+                        else ConnectionPanel(state, onConnection, stackActions = true)
+                        DashboardAlerts(state)
+                        if (shortWindow && state.connection.status == ConnectionStatus.ERROR) Notice(state.connection.message)
+                        DeviceBar(state, onConnection)
+                        if (!shortWindow) ConnectionFooter(state, onDisconnect)
+                    }
+                }.single().measure(measureConstraints)
+                val heroHeight = (height.roundToPx() - controls.height - gap)
+                    .coerceAtLeast((200 * fontScale).dp.roundToPx()).toDp()
+                val companion = subcompose(TabletSlot.COMPANION) {
+                    PlantCompanionCard(state, Modifier.heightIn(min = heroHeight), showcase = true)
+                }.single().measure(measureConstraints)
+                layout(constraints.maxWidth, companion.height + gap + controls.height) {
+                    companion.placeRelative(0, 0)
+                    controls.placeRelative(0, companion.height + gap)
+                }
+            }
+        }
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            SensorMetric.entries.chunked(2).forEach { row ->
+                Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    row.forEach { metric ->
+                        SensorCard(metric, state.readings.latest, state.readings.history, state.lightThresholds,
+                            { onSensor(metric) }, Modifier.weight(1f).fillMaxHeight(), expanded = true,
+                            minHeight = 160.dp)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -116,7 +146,7 @@ private fun DashboardOverview(state: MonitorUiState, onConnection: () -> Unit, o
 }
 
 @Composable
-private fun ConnectionStrip(state: MonitorUiState, onConnection: () -> Unit) {
+private fun ConnectionStrip(state: MonitorUiState, onConnection: () -> Unit, emphasizeAction: Boolean = false) {
     val connected = state.connection.status == ConnectionStatus.CONNECTED
     val busy = state.connection.status in listOf(ConnectionStatus.SCANNING, ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING)
     val dot = when {
@@ -144,7 +174,8 @@ private fun ConnectionStrip(state: MonitorUiState, onConnection: () -> Unit) {
                 if (connected) {
                     Icon(Icons.Outlined.BluetoothConnected, "Gestionar conexión BLE", tint = MaterialTheme.colorScheme.primary)
                     Icon(Icons.Outlined.ExpandMore, null, Modifier.size(18.dp))
-                } else TextButton(onConnection) {
+                } else if (emphasizeAction) ConnectButton(onConnection, busy)
+                else TextButton(onConnection) {
                     Text(if (busy) "Ver BLE" else "Conectar", style = MaterialTheme.typography.labelMedium)
                 }
             }
